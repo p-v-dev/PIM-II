@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #define BOOL int
 #define TRUE 1
@@ -9,7 +10,7 @@ struct aluno{
     char matricula;
     char nome[NOME];
     char turma[NOME];
-    char senha[30];
+    //char senha[30];
 };
 
 struct professor{
@@ -29,6 +30,7 @@ struct atividade{
     char descricao[150];
     char nome_turma[NOME];
     BOOL status;
+    time_t data_expiracao;
 };
 
 
@@ -48,6 +50,7 @@ void criar_turma(){
 
 }
 
-void criar_atividade(){
+// void criar_atividade(){
 
-}
+// }
+
