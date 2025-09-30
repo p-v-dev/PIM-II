@@ -143,6 +143,9 @@ void menu(){
 //     aluno.turma;
 
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 // }
 
