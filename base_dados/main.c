@@ -1,39 +1,41 @@
 #include <stdio.h>
 #include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
-#define BOOL int
-#define TRUE 1
-#define FALSE 0
 #define NOME 50
 
-struct aluno{
-    char matricula;
+typedef struct {
     char nome[NOME];
-    char turma[NOME];
-    //char senha[30];
-};
+    char email[30];
+    char senha[30];
+}Usuario;
 
-struct professor{
+typedef struct{
+    char nome[NOME];
+    Aluno alunos;
+}Turma;
+
+
+typedef struct {
     char nome[NOME];
     char email[30];
     char disciplina[30];
     char senha[30];
-};
+}Professor;
 
-struct turma{
+typedef struct {
+    char nome[20];
+    float nota1;
+    float nota2;
+    float media;
+}Disciplina;
+
+typedef struct {
+    char matricula;
     char nome[NOME];
-<<<<<<< Updated upstream
-    int quantidade_alunos;
-};
-
-struct atividade{
-    char titulo[NOME];
-    char descricao[150];
-    char nome_turma[NOME];
-    BOOL status;
-    time_t data_expiracao;
-};
-=======
     char turma[NOME];
     char senha[20];
     Disciplina disciplinas[10];
@@ -48,29 +50,10 @@ int qtd;
 //     char status[20];
 //     time_t data_expiracao;
 // };
->>>>>>> Stashed changes
 
 
 int main(){
 
-<<<<<<< Updated upstream
-}
-
-void incluir_aluno(){
-
-}
-
-void incluir_professor(){
-
-}
-
-void criar_turma(){
-
-}
-
-// void criar_atividade(){
-
-=======
     int escolha;
 
      while (escolha != 7){
@@ -131,21 +114,3 @@ void menu(){
     printf("Escolha uma opção: ");
     scanf("%i\n", &opt);
 }
-
-
-//PROTOTIPO
-// void incluir_aluno(char matricula, char nome, char turma){
-//     Aluno aluno;
-
-//     aluno.disciplinas;
-//     aluno.matricula;
-//     aluno.nome;
-//     aluno.turma;
-
-
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-// }
-
