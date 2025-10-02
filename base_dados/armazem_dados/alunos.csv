@@ -1,2 +1,21 @@
-Matricula;Nome;Turma;nome_materia;faltas_materia;materia_n1;materia_n2;materia_media;
-testemt12451;teste_da_silva;turma_teste;materia;teste;124;8;2;5;
+Matricula;Aluno;Turma;Disciplina;Faltas;Nota_Materia_1;Nota_Materia_2;Media
+2024001;Ana Silva;A;Matemática;3;8.5;9.0;8.7
+2024002;Bruno Oliveira;B;Português;1;7.0;8.5;7.7
+2024003;Carlos Santos;A;História;5;6.5;7.0;6.7
+2024004;Daniela Costa;C;Geografia;2;9.0;8.5;8.7
+2024005;Eduardo Lima;A;Física;4;5.5;6.0;5.7
+2024006;Fernanda Rocha;B;Química;0;8.0;9.5;8.7
+2024007;Gabriel Alves;C;Biologia;3;7.5;8.0;7.7
+2024008;Juliana Pereira;A;Inglês;1;9.5;9.0;9.2
+2024009;Lucas Martins;B;Artes;6;4.5;5.0;4.7
+2024010;Mariana Souza;C;Educação Física;2;10.0;9.5;9.7
+2024011;Pedro Henrique;A;Matemática;2;7.5;8.0;7.7
+2024012;Amanda Torres;B;Física;4;6.0;7.5;6.7
+2024013;Rafael Mendes;C;Química;1;8.5;9.0;8.7
+2024014;Camila Oliveira;A;Biologia;3;9.0;8.5;8.7
+2024015;Diego Santos;B;História;0;7.5;8.0;7.7
+2024016;Larissa Costa;C;Geografia;2;6.5;7.0;6.7
+2024017;Vinícius Lima;A;Português;5;8.0;8.5;8.2
+2024018;Patrícia Alves;B;Inglês;1;9.0;9.5;9.2
+2024019;Thiago Pereira;C;Artes;3;5.5;6.0;5.7
+2024020;Isabela Rocha;A;Educação Física;0;10.0;10.0;10.0
