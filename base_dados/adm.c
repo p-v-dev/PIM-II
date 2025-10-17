@@ -4,18 +4,6 @@
 #include "adm.h"
 #include "main.h"
 
-// menu adm
-
-//void login(){
-//     char email_login[31];
-//     char senha_login[31];
-//     printf("====LOGIN====\n");
-//     printf("email:");
-//     scanf("%s", &email_login);
-//     printf("senha:");
-//     scanf("%s", &senha_login);
-// }
-
 //OPERACOES ALUNOS
 
 void incluir_aluno(sqlite3 *db, Aluno aluno){
