@@ -9,19 +9,22 @@
 void incluir_aluno(sqlite3 *db, Aluno aluno){
     char sql[1000];
     char *erro = 0;
+    char senha_db[20]; // Declaração correta da variável
 
-    Aluno aluno_novo =  aluno;
-
-  
-    // precisa fazer hash da senha
-    snprintf(sql, sizeof(sql),"INSERT INTO alunos_nova (nome, sobrenome, senha, email, rg, cpf, endereco) VALUES('%s', '%s','%s', '%s','%s','%s')", 
-        aluno_novo.nome,  
-        aluno_novo.sobrenome, 
-        aluno_novo.senha, 
-        aluno_novo.email,
-        aluno_novo.rg, 
-        aluno_novo.cpf, 
-        aluno_novo.endereco
+    // Faz hash da senha
+    hash_simples(aluno.senha, senha_db);
+    
+    // Query corrigida - removi a vírgula extra e adicionei turma
+    snprintf(sql, sizeof(sql),"INSERT INTO alunos_nova (nome, sobrenome, matricula, email, senha, rg, cpf, endereco, turma) VALUES('%s', '%s','%s', '%s','%s','%s','%s', '%s', '%s')", 
+        aluno.nome,  
+        aluno.sobrenome, 
+        aluno.matricula,
+        aluno.email,
+        senha_db, 
+        aluno.rg, 
+        aluno.cpf, 
+        aluno.endereco,
+        aluno.turma
     );
 
     int add_aluno = sqlite3_exec(db, sql, 0, 0, &erro);
@@ -30,93 +33,56 @@ void incluir_aluno(sqlite3 *db, Aluno aluno){
         printf("Erro ao adicionar aluno: %s\n", erro);
         sqlite3_free(erro);
     } else {
-        printf("Aluno '%s' adicionado com sucesso!\n", aluno_novo.nome);
+        printf("Aluno '%s' adicionado com sucesso!\n", aluno.nome);
     }
 }
 
 void listar_alunos(sqlite3 *db){
     sqlite3_stmt *stmt;
+    const char *sql = "SELECT * FROM alunos_nova";
     
-    const char *sql_count = "SELECT COUNT(*) FROM alunos_nova;";
-    int query_prep = sqlite3_prepare_v2(db, sql_count, -1, &stmt, NULL);
+    printf("\n=== ALUNOS ===\n");
     
-    int total_alunos = 0;
-    if(sqlite3_step(stmt) == SQLITE_ROW) {
-        total_alunos = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
-    
-    printf("Alunos cadastrados: %d\n", total_alunos);
-    
-    if(total_alunos == 0) {
-        printf("tabela vazia. Nenhum aluno.\n");
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Erro ao preparar SELECT alunos: %s\n", sqlite3_errmsg(db));
         return;
     }
     
-    //listar alunos
-    const char *sql = "SELECT * FROM alunos_nova;";
-    query_prep = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-
-    if(query_prep != SQLITE_OK) {
-        printf("Erro ao preparar query: %s\n", sqlite3_errmsg(db));
-        return;
-    }
-
-    printf("\n==== DADOS DOS ALUNOS ====\n");
-
-    int alunos_encontrados = 0;
-    while(sqlite3_step(stmt) == SQLITE_ROW){
-        alunos_encontrados++;
-        
-        int id = sqlite3_column_int(stmt,0);
-        const char *nome = (const char*)sqlite3_column_text(stmt,1);
-        const char *sobrenome = (const char*)sqlite3_column_text(stmt,2);
-        //const char *senha = (const char*)sqlite3_column_text(stmt, 4);
-        const char *email = (const char*)sqlite3_column_text(stmt, 3);
-        const char *rg = (const char*)sqlite3_column_text(stmt, 4);
-        const char *cpf = (const char*)sqlite3_column_text(stmt, 5);
-        const char *endereco = (const char*)sqlite3_column_text(stmt, 6);
-
-        double ling_est_c_bim1 = sqlite3_column_double(stmt, 7);
-        double ling_est_c_bim2 = sqlite3_column_double(stmt, 8);
-        double python_bim1 = sqlite3_column_double(stmt, 9);
-        double python_bim2 = sqlite3_column_double(stmt, 10);
-        double eng_soft_bim1 = sqlite3_column_double(stmt, 11);
-        double eng_soft_bim2 = sqlite3_column_double(stmt, 12);
-        double ia_bim1 = sqlite3_column_double(stmt, 13);
-        double ia_bim2 = sqlite3_column_double(stmt, 14);
-
-        printf("ID: %d\n", id);
-        printf("Nome: %s\n", nome);
-        printf("Sobrenome: %s\n", sobrenome);
-        printf("Email: %s\n", email);
-        printf("RG: %s\n", rg);
-        printf("CPF: %s\n", cpf);
-        printf("Endereco: %s\n", endereco);
-        printf("Nota Linguagem C Bim1: %.1f\n", ling_est_c_bim1);
-        printf("Nota Linguagem C Bim2: %.1f\n", ling_est_c_bim2);
-        printf("Nota Python Bim1: %.1f\n", python_bim1);
-        printf("Nota Python Bim2: %.1f\n", python_bim2);
-        printf("Nota Eng. Software Bim1: %.1f\n", eng_soft_bim1);
-        printf("Nota Eng. Software Bim2: %.1f\n", eng_soft_bim2);
-        printf("Nota IA Bim1: %.1f\n", ia_bim1);
-        printf("Nota IA Bim2: %.1f\n", ia_bim2);
-        printf("----------------------------\n");
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %d\n", sqlite3_column_int(stmt, 0));
+        printf("Nome: %s\n", sqlite3_column_text(stmt, 1));
+        printf("Sobrenome: %s\n", sqlite3_column_text(stmt, 2));
+        printf("Matricula: %s\n", sqlite3_column_text(stmt, 3));
+        printf("Turma: %s\n", sqlite3_column_text(stmt, 4));
+        printf("Email: %s\n", sqlite3_column_text(stmt, 5));
+        printf("Senha: %s\n", sqlite3_column_text(stmt, 6));
+        printf("RG: %s\n", sqlite3_column_text(stmt, 7));
+        printf("Cpf: %s\n", sqlite3_column_text(stmt, 8));
+        printf("Endereco: %s\n", sqlite3_column_text(stmt, 9));
+        printf("Faltas: %d\n", sqlite3_column_int(stmt, 10));
+        printf("Linguagem C - Bim1: %.1f\n", sqlite3_column_double(stmt, 11));
+        printf("Linguagem C - Bim2: %.1f\n", sqlite3_column_double(stmt, 12));
+        printf("Linguagem C - Media: %.1f\n", sqlite3_column_double(stmt, 13));
+        printf("Python - Bim1: %.1f\n", sqlite3_column_double(stmt, 14));
+        printf("Python - Bim2: %.1f\n", sqlite3_column_double(stmt, 15));
+        printf("Python - Media: %.1f\n", sqlite3_column_double(stmt, 16));
+        printf("Engenharia Software - Bim1: %.1f\n", sqlite3_column_double(stmt, 17));
+        printf("Engenharia Software - Bim2: %.1f\n", sqlite3_column_double(stmt, 18));
+        printf("Engenharia Software - Media: %.1f\n", sqlite3_column_double(stmt, 19));
+        printf("Inteligencia Artificial - Bim1: %.1f\n", sqlite3_column_double(stmt, 20));
+        printf("Inteligencia Artificial - Bim2: %.1f\n", sqlite3_column_double(stmt, 21));
+        printf("Inteligencia Artificial - Media: %.1f\n", sqlite3_column_double(stmt, 22));
+        printf("----------------------------------------\n");
     }
     
     sqlite3_finalize(stmt);
-    
-    if(alunos_encontrados == 0) {
-        printf("executou mas nao retornou nada\n");
-    } else {
-        printf("Total de alunos: %d\n", alunos_encontrados);
-    }
 }
-void excluir_aluno(sqlite3 *db, const char *nome){
+
+void excluir_aluno(sqlite3 *db, const char *matricula){
     char sql[200];
     char *erro = 0;
 
-    snprintf(sql, sizeof(sql), "DELETE FROM alunos_nova WHERE nome = '%s';", nome);
+    snprintf(sql, sizeof(sql), "DELETE FROM alunos_nova WHERE matricula = '%s';", matricula);
 
     int excluir_aluno = sqlite3_exec(db, sql, 0, 0, &erro);
 
@@ -126,12 +92,11 @@ void excluir_aluno(sqlite3 *db, const char *nome){
     } else {
         int linhas_afetadas = sqlite3_changes(db);
         if(linhas_afetadas > 0) {
-            printf("Aluno '%s' excluído com sucesso! (%d registro(s) removido(s))\n", nome, linhas_afetadas);
+            printf("Aluno com matrícula '%s' excluído com sucesso! (%d registro(s) removido(s))\n", matricula, linhas_afetadas);
         } else {
-            printf("Nenhum aluno encontrado com nome '%s'\n", nome);
+            printf("Nenhum aluno encontrado com matrícula '%s'\n", matricula);
         }
     }
-
 }   
 
 // OPERACOES PROFESSORES
@@ -139,20 +104,22 @@ void excluir_aluno(sqlite3 *db, const char *nome){
 void incluir_professor(sqlite3 *db, Professor professor){
     char sql[1000];
     char *erro = 0;
+    char senha_db[20];
 
-    Professor professor_novo = professor;
-
-    // precisa fazer hash da senha
+    // Faz hash da senha
+    hash_simples(professor.senha, senha_db);
+    
+    // Query corrigida - removi vírgula extra e campo duplicado
     snprintf(sql, sizeof(sql), 
-    "INSERT INTO professores (nome, sobrenome, senha, email, rg, cpf,disciplina, endereco, ) VALUES ('%s', '%s', '%s', '%s', '%s', '%s');",
-        professor_novo.nome, 
-        professor_novo.sobrenome, 
-        professor_novo.senha, 
-        professor_novo.email,
-        professor_novo.rg,  
-        professor_novo.cpf, 
-        professor_novo.disciplina,
-        professor_novo.endereco 
+    "INSERT INTO professores (nome, sobrenome, disciplina, email, senha, rg, cpf, endereco) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');",
+        professor.nome, 
+        professor.sobrenome, 
+        professor.disciplina,
+        professor.email,
+        senha_db, 
+        professor.rg,  
+        professor.cpf, 
+        professor.endereco 
     );
 
     int add_prof = sqlite3_exec(db, sql, 0, 0, &erro);
@@ -161,63 +128,42 @@ void incluir_professor(sqlite3 *db, Professor professor){
         printf("Erro ao adicionar professor: %s\n", erro);
         sqlite3_free(erro);
     } else {
-        printf("Professor '%s' adicionado com sucesso!\n", professor_novo.nome);
+        printf("Professor '%s' adicionado com sucesso!\n", professor.nome);
     }
 }
 
 void listar_professores(sqlite3 *db){
     sqlite3_stmt *stmt;
-    const char *sql = "SELECT * FROM professores;";
+    const char *sql = "SELECT * FROM professores";
     
-    int query_prep = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    printf("\n=== PROFESSORES ===\n");
     
-    if(query_prep != SQLITE_OK) {
-        printf("Erro ao preparar query: %s\n", sqlite3_errmsg(db));
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Erro ao preparar SELECT professores: %s\n", sqlite3_errmsg(db));
         return;
     }
     
-    printf("==== LISTA DE PROFESSORES ====\n");
-    
-    int contador = 0;
-    while(sqlite3_step(stmt) == SQLITE_ROW) {
-        contador++;
-        
-        int id = sqlite3_column_int(stmt, 0);
-        const char *nome = (const char*)sqlite3_column_text(stmt, 1);
-        const char *sobrenome = (const char*)sqlite3_column_text(stmt, 2);
-        const char *senha = (const char*)sqlite3_column_text(stmt, 3);
-        const char *email = (const char*)sqlite3_column_text(stmt, 4);
-        const char *rg = (const char*)sqlite3_column_text(stmt, 5);
-        const char *cpf = (const char*)sqlite3_column_text(stmt, 6);
-        const char *disciplina = (const char*)sqlite3_column_text(stmt, 7);
-        const char *endereco = (const char*)sqlite3_column_text(stmt, 8);
-        
-        
-        printf("ID: %d\n", id);
-        printf("Nome: %s\n", nome);
-        printf("Sobrenome: %s\n", nome);
-        printf("RG: %s\n", rg);
-        printf("CPF: %s\n", cpf);
-        printf("Email: %s\n", email); 
-        printf("Endereço: %s\n", endereco);
-        printf("Disciplina: %s\n", disciplina);
-        printf("---------------------\n");
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %d\n", sqlite3_column_int(stmt, 0));
+        printf("Nome: %s\n", sqlite3_column_text(stmt, 1));
+        printf("Sobrenome: %s\n", sqlite3_column_text(stmt, 2));
+        printf("Disciplina: %s\n", sqlite3_column_text(stmt, 3));
+        printf("Email: %s\n", sqlite3_column_text(stmt, 4));
+        printf("Senha: %s\n", sqlite3_column_text(stmt, 5));
+        printf("RG: %s\n", sqlite3_column_text(stmt, 6));
+        printf("CPF: %s\n", sqlite3_column_text(stmt, 7));
+        printf("Endereco: %s\n", sqlite3_column_text(stmt, 8));
+        printf("----------------------------------------\n");
     }
     
     sqlite3_finalize(stmt);
-    
-    if(contador == 0) {
-        printf("Nenhum professor cadastrado.\n");
-    } else {
-        printf("Total de professores: %d\n", contador);
-    }
 }
 
-void excluir_professor(sqlite3 *db, const char *nome){
+void excluir_professor(sqlite3 *db, const char *email){
     char sql[200];
     char *erro = 0;
     
-    snprintf(sql, sizeof(sql), "DELETE FROM professores WHERE nome = '%s';", nome);
+    snprintf(sql, sizeof(sql), "DELETE FROM professores WHERE email = '%s';", email);
     
     int deletar_professor = sqlite3_exec(db, sql, 0, 0, &erro);
     
@@ -227,30 +173,32 @@ void excluir_professor(sqlite3 *db, const char *nome){
     } else {
         int linhas_afetadas = sqlite3_changes(db);
         if(linhas_afetadas > 0) {
-            printf("Professor '%s' excluído com sucesso! (%d registro(s) removido(s))\n", nome, linhas_afetadas);
+            printf("Professor com email '%s' excluído com sucesso! (%d registro(s) removido(s))\n", email, linhas_afetadas);
         } else {
-            printf("Nenhum professor encontrado com nome '%s'\n", nome);
+            printf("Nenhum professor encontrado com email '%s'\n", email);
         }
     }
 }
 
 //OPERACOES ADMS
 
-void incluir_administrador(sqlite3 *db, Admnistrador admnistrador) {
+void incluir_administrador(sqlite3 *db, Administrador administrador) {
     char sql[1000];
     char *erro = 0;
-      
-    Admnistrador novo_administrador = admnistrador;
+    char senha_db[20];
 
+    // Faz hash da senha
+    hash_simples(administrador.senha, senha_db);
+    
     snprintf(sql, sizeof(sql), 
-    "INSERT INTO administradores (nome, sobrenome, senha, rg,  cpf,  email, endereco) VALUES ('%s', '%s', '%s', '%s', '%s', '%s');", 
-        novo_administrador.nome, 
-        novo_administrador.sobrenome,
-        novo_administrador.senha, 
-        novo_administrador.cpf, 
-        novo_administrador.rg, 
-        novo_administrador.email, 
-        novo_administrador.endereco
+    "INSERT INTO administradores (nome, sobrenome, email, senha, rg, cpf, endereco) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');", 
+        administrador.nome, 
+        administrador.sobrenome,
+        administrador.email, 
+        senha_db, 
+        administrador.rg, 
+        administrador.cpf, 
+        administrador.endereco
     );
     
     int add_adm = sqlite3_exec(db, sql, 0, 0, &erro);
@@ -259,60 +207,41 @@ void incluir_administrador(sqlite3 *db, Admnistrador admnistrador) {
         printf("Erro ao adicionar administrador: %s\n", erro);
         sqlite3_free(erro);
     } else {
-        printf("Administrador '%s' adicionado com sucesso!\n", novo_administrador.nome);
+        printf("Administrador '%s' adicionado com sucesso!\n", administrador.nome);
     }
 }
 
 void listar_administradores(sqlite3 *db) {
     sqlite3_stmt *stmt;
-    const char *sql = "SELECT * FROM administradores;";
+    const char *sql = "SELECT * FROM administradores";
     
-    int query_prep = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    printf("\n=== ADMINISTRADORES ===\n");
     
-    if(query_prep != SQLITE_OK) {
-        printf("Erro ao preparar query: %s\n", sqlite3_errmsg(db));
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Erro ao preparar SELECT administradores: %s\n", sqlite3_errmsg(db));
         return;
     }
     
-    printf("==== LISTA DE ADMINISTRADORES ====\n");
-    
-    int contador = 0;
-    while(sqlite3_step(stmt) == SQLITE_ROW) {
-        contador++;
-        
-        int id = sqlite3_column_int(stmt, 0);
-        const char *nome = (const char*)sqlite3_column_text(stmt, 1);
-        const char *sobrenome = (const char*)sqlite3_column_text(stmt, 2);
-        const char *senha = (const char*)sqlite3_column_text(stmt, 3);
-        const char *rg = (const char*)sqlite3_column_text(stmt, 4);
-        const char *cpf = (const char*)sqlite3_column_text(stmt, 5);
-        const char *email = (const char*)sqlite3_column_text(stmt, 6);
-        const char *endereco = (const char*)sqlite3_column_text(stmt, 7);
-        
-        printf("ID: %d\n", id);
-        printf("Nome: %s\n", nome);
-        printf("Sobrenome: %s\n", sobrenome);
-        printf("Email: %s\n", email);
-        printf("CPF: %s\n", cpf);
-        printf("RG: %s\n", rg);
-        printf("Endereço: %s\n", endereco);
-        printf("---------------------\n");
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %d\n", sqlite3_column_int(stmt, 0));
+        printf("Nome: %s\n", sqlite3_column_text(stmt, 1));
+        printf("Sobrenome: %s\n", sqlite3_column_text(stmt, 2));
+        printf("Email: %s\n", sqlite3_column_text(stmt, 3));
+        printf("Senha: %s\n", sqlite3_column_text(stmt, 4));
+        printf("RG: %s\n", sqlite3_column_text(stmt, 5));
+        printf("CPF: %s\n", sqlite3_column_text(stmt, 6));
+        printf("Endereco: %s\n", sqlite3_column_text(stmt, 7));
+        printf("----------------------------------------\n");
     }
     
     sqlite3_finalize(stmt);
-    
-    if(contador == 0) {
-        printf("Nenhum administrador cadastrado.\n");
-    } else {
-        printf("Total de administradores: %d\n", contador);
-    }
 }
 
-void excluir_administrador(sqlite3 *db, const char *nome) {
+void excluir_administrador(sqlite3 *db, const char *email) {
     char sql[200];
     char *erro = 0;
     
-    snprintf(sql, sizeof(sql), "DELETE FROM administradores WHERE nome = '%s';", nome);
+    snprintf(sql, sizeof(sql), "DELETE FROM administradores WHERE email = '%s';", email);
     
     int rc = sqlite3_exec(db, sql, 0, 0, &erro);
     
@@ -322,9 +251,9 @@ void excluir_administrador(sqlite3 *db, const char *nome) {
     } else {
         int linhas_afetadas = sqlite3_changes(db);
         if(linhas_afetadas > 0) {
-            printf("Administrador '%s' excluído com sucesso! (%d registro(s) removido(s))\n", nome, linhas_afetadas);
+            printf("Administrador com email '%s' excluído com sucesso! (%d registro(s) removido(s))\n", email, linhas_afetadas);
         } else {
-            printf("Nenhum administrador encontrado com nome '%s'\n", nome);
+            printf("Nenhum administrador encontrado com email '%s'\n", email);
         }
     }
 }

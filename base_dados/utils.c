@@ -2,7 +2,7 @@
 #include <string.h>
 
 // SALT fixo
-#define SALT "SALT123"
+#define SALT "abds14"
 
 // Função de hash super simples (soma de caracteres + SALT)
 void hash_simples(const char *senha, char *hash_resultado) {

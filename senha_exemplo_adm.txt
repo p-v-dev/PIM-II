@@ -1,0 +1,19 @@
+    "admin" → c2e4a0
+
+    "password" → 1001a7b
+
+    "123456" → b8f92d
+
+    "teste" → a6b39c
+
+    "senha" → e0a8e8
+
+    "user" → d3c5e7
+
+    "1234" → f4d6f8
+
+    "abc" → b9e7d5
+
+    "hello" → c8f6e4
+
+    "secret" → a7d5c3

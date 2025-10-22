@@ -5,7 +5,7 @@ sqlite3 *db;
 void menu_adm(){
     int opt_menu;
 
-    while(1){
+    //while(1){
 
         
         printf("======MENU======\n");
@@ -58,12 +58,20 @@ void menu_adm(){
                 scanf("%s", aluno.sobrenome);
                 getchar();
                 printf("---------------------\n");
-                printf("Senha: ");
-                scanf("%s", aluno.senha);
+                printf("Matricula: ");
+                scanf("%s", aluno.matricula);
+                getchar();
+                printf("---------------------\n");
+                printf("Turma: ");
+                scanf("%s", aluno.turma);
                 getchar();
                 printf("---------------------\n");
                 printf("Email: ");
                 scanf("%s", aluno.email);
+                getchar();
+                printf("---------------------\n");
+                printf("Senha: ");
+                scanf("%s", aluno.senha);
                 getchar();
                 printf("---------------------\n");
                 printf("RG: ");
@@ -76,9 +84,7 @@ void menu_adm(){
                 printf("---------------------\n");
                 printf("Endereco: ");
                 scanf("%s", aluno.endereco);
-                getchar();
                 printf("---------------------\n");
-
                 incluir_aluno(db, aluno);
                 break;
             }
@@ -94,12 +100,16 @@ void menu_adm(){
                 scanf("%s", professor.sobrenome);
                 getchar();
                 printf("---------------------\n");
-                printf("Senha: ");
-                scanf("%s", professor.senha);
+                printf("Disciplina: ");
+                scanf("%s", professor.disciplina);
                 getchar();
                 printf("---------------------\n");
                 printf("Email: ");
                 scanf("%s", professor.email);
+                getchar();
+                printf("---------------------\n");
+                printf("Senha: ");
+                scanf("%s", professor.senha);
                 getchar();
                 printf("---------------------\n");
                 printf("RG: ");
@@ -114,16 +124,11 @@ void menu_adm(){
                 scanf("%s", professor.endereco);
                 getchar();
                 printf("---------------------\n");
-                printf("Disciplina: ");
-                scanf("%s", professor.disciplina);
-                getchar();
-                printf("---------------------\n");
-
                 incluir_professor(db, professor);
                 break;
             }
             case 6: {
-                Admnistrador administrador;  // Corrigido o nome
+                Administrador administrador;  
         
                 printf("======ADICIONAR ADMINISTRADOR======\n");
                 printf("Nome: ");
@@ -134,12 +139,12 @@ void menu_adm(){
                 scanf("%s", administrador.sobrenome);
                 getchar();
                 printf("---------------------\n");
-                printf("Senha: ");
-                scanf("%s", administrador.senha);
-                getchar();
-                printf("---------------------\n");
                 printf("Email: ");
                 scanf("%s", administrador.email);
+                getchar();
+                printf("---------------------\n");
+                printf("Senha: ");
+                scanf("%s", administrador.senha);
                 getchar();
                 printf("---------------------\n");
                 printf("RG: ");
@@ -154,171 +159,136 @@ void menu_adm(){
                 scanf("%s", administrador.endereco);
                 getchar();
                 printf("---------------------\n");
-
                 incluir_administrador(db, administrador);
                 break;
             }
             case 7: {
-                char nome[CAMPO_LONGO]; 
+                char matricula[CAMPO_LONGO]; 
 
                 printf("======EXCLUIR ALUNO======\n");
-                printf("Nome: ");
-                scanf("%s", nome);
+                printf("Matricula: ");
+                scanf("%s", matricula);
                 getchar();
                 printf("---------------------\n");
-                excluir_aluno(db, nome);
+                excluir_aluno(db, matricula);
                 
                 break;
             }
             case 8: {
-                char nome_prof[CAMPO_LONGO];  // Nome diferente para evitar conflito
+                char email[CAMPO_LONGO];  // Nome diferente para evitar conflito
                 printf("======EXCLUIR PROFESSOR======\n");
-                printf("Nome: ");
-                scanf("%s", nome_prof);
+                printf("Email: ");
+                scanf("%s", email);
                 getchar();
                 printf("---------------------\n");
-                excluir_professor(db, nome_prof);
+                excluir_professor(db, email);
                
                 break;
             }
             case 9: {
-                char nome_adm[CAMPO_LONGO];  // Nome diferente para evitar conflito
+                char email[CAMPO_LONGO];  // Nome diferente para evitar conflito
                 printf("======EXCLUIR ADMINISTRADOR======\n");
-                printf("Nome: ");
-                scanf("%s", nome_adm);
+                printf("Email: ");
+                scanf("%s", email);
                 getchar();
                 printf("---------------------\n");
-                excluir_administrador(db, nome_adm);
+                excluir_administrador(db, email);
                
                 break;
             }
         }
-    }
+    //}
 }
 
-void menu_professor(){
-    int opt_menu;
-
-    while(1){
-        printf("======MENU======\n");
-        printf("1. Listar alunos\n");
-        printf("2. Dar nota\n");
-        printf("3. Sair\n");
-        printf(">>");
-        scanf("%d", &opt_menu);
-        getchar(); 
-        printf("---------------------\n");
-
-        if(opt_menu == 3){  // Corrigido: deve ser 3, não 10
-            printf("Saindo...\n");
-            return;
-        }
-
-        switch (opt_menu) {
-            case 1:
-                listar_alunos(db);
-                
-                break;
-
-            case 2: {
-                int opt_disciplina;
-                printf("======SELECIONE A DISCIPLINA======\n");
-                printf("1. Programacao estruturada em C\n");
-                printf("2. Estruturas e Algoritmos em Python\n");
-                printf("3. Engenharia de Software Agil\n");
-                printf("4. Inteligencia Artificial\n");
-                printf(">>");
-                scanf("%d", &opt_disciplina);
-                getchar();
-                printf("---------------------\n");
-
-                char cpf[15];
-                printf("======SELECAO DE ALUNO======\n");
-                printf("Digite o CPF do aluno:\n");
-                printf(">>");
-                scanf("%14s", cpf);  // Corrigido: %s para string, não %d
-                getchar();
-                printf("---------------------\n");
-
-                int bim;
-                printf("======BIMESTRE======\n");
-                printf("Bimestre 1 ou Bimestre 2?\n");
-                printf(">>");
-                scanf("%d", &bim);
-                getchar();
-                printf("---------------------\n");
-
-                float nota;
-                printf("======NOTA======\n");
-                printf("Digite a nota do bimestre:\n");
-                printf(">>");
-                scanf("%f", &nota);  // Corrigido: %f para float, não %d
-                getchar();
-                printf("---------------------\n");
-
-                // SELECAO BIMESTRE 1 OU 2
-                switch(bim){
-                    case 1:
-                        // SELECAO DISCIPLINA
-                        switch (opt_disciplina) {
-                            case 1:
-                                dar_nota(db, cpf, nota, 7);
-                                break;
-                            case 2:
-                                dar_nota(db, cpf, nota, 9);
-                                break;
-                            case 3:
-                                dar_nota(db, cpf, nota, 11);
-                                break;
-                            case 4:
-                                dar_nota(db, cpf, nota, 13);
-                                break;
-                        }
-                        break;    
-
-                    case 2:
-                        switch (opt_disciplina) {
-                            case 1:
-                                dar_nota(db, cpf, nota, 8);
-                                break;
-                            case 2:
-                                dar_nota(db, cpf, nota, 10);
-                                break;
-                            case 3:
-                                dar_nota(db, cpf, nota, 12);
-                                break;
-                            case 4:
-                                dar_nota(db, cpf, nota, 14);
-                                break;
-                        }
-                        break;
-                }
-                break;
-            }
-        }
+void hash_simples(const char *senha, char *hash_resultado) {
+    char combinacao[256];
+    int soma = 0;
+    int i;
+    
+  
+    snprintf(combinacao, sizeof(combinacao), "%s%s", senha, SALT);
+    
+    // Soma todos os caracteres
+    for(i = 0; combinacao[i] != '\0'; i++) {
+        soma += combinacao[i];
     }
+    
+    // Converter string formato hexadecimal 
+    snprintf(hash_resultado, 20, "%x", soma * 123); 
+} 
+
+int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
+    sqlite3_stmt *stmt;
+    char query[256];
+    char hash_senha[MAX_HASH];
+    char hash_banco[MAX_HASH];
+    int resultado = 0;
+    
+    // Calcula o hash da senha fornecida
+    hash_simples(senha, hash_senha);
+    //printf("Hash calculado: %s\n", hash_senha);
+    
+    // Prepara a query SQL
+    snprintf(query, sizeof(query), "SELECT senha FROM administradores WHERE cpf =%s", cpf);
+    
+    if (sqlite3_prepare_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Erro ao preparar query: %s\n", sqlite3_errmsg(db));
+        return -1;
+    }
+    
+    // Bind do parâmetro email
+    sqlite3_bind_text(stmt, 1, cpf, -1, SQLITE_STATIC);
+    
+    // Executa a query
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        // Pega o hash do banco de dados
+        const char *hash_db = (const char*)sqlite3_column_text(stmt, 0);
+        strncpy(hash_banco, hash_db, sizeof(hash_banco) - 1);
+        hash_banco[sizeof(hash_banco) - 1] = '\0';
+        
+       // printf("Hash do banco: %s\n", hash_banco);
+        
+        // Compara os hashes
+        if (strcmp(hash_senha, hash_banco) == 0) {
+            printf("Login bem-sucedido!\n");
+            resultado = 1; // Login bem-sucedido
+        } else {
+            printf("Senha incorreta!\n");
+            resultado = 0; // Senha incorreta
+        }
+    } else {
+        printf("Usuário não encontrado!\n");
+        resultado = -1; // Usuário não encontrado
+    }
+    
+    sqlite3_finalize(stmt);
+    return resultado;
 }
+
+
+
 
 int main(){
     if(sqlite3_open("database.db", &db) == SQLITE_OK){
-        printf("Entrar como:\n");
-        printf("1. Professor\n");   
-        printf("2. Administrador\n");
-        printf(">>");
-        int sw;
-        scanf("%d", &sw);
+        char cpf_login[50];
+        char senha_login[50];
+
+
+        
+
+        printf("===Entrar===\n");
+        printf("CPF:\n"); 
+        scanf("%s", &cpf_login);  
+        getchar();
+
+        printf("Senha:\n");
+        scanf("%s", &senha_login);
         getchar();
         
-        switch(sw){
-            case 1:
-                menu_professor();
-                break;
-
-            case 2:
-                menu_adm();
-                break;
+        if(fazer_login(db, cpf_login, senha_login)== 1){
+            menu_adm();
         }
-        
+
         sqlite3_close(db);  // Fechar o banco de dados
     } else {
         printf("Erro ao abrir o banco de dados!\n");

@@ -1,0 +1,45 @@
+Aluno:
+id
+nome
+sobrenome
+matricula
+email
+senha
+rg
+cpf
+endereco
+faltas
+float ling_est_c_bim1;
+float ling_est_c_bim2;
+float ling_est_c_media;
+float python_bim1; 
+float python_bim2;
+float python_media;
+float eng_soft_bim1; 
+float eng_soft_bim2; 
+float eng_soft_media;
+float ia_bim1; 
+float ia_bim2;
+float ia_media;
+
+Professor:
+id
+nome
+sobrenome
+disciplina
+email
+senha
+rg
+cpf
+endereco
+
+administrador
+
+id
+nome
+sobrenome
+email
+senha
+rg
+cpf
+endereco
