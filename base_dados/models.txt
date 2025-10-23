@@ -7,7 +7,7 @@ email
 senha
 rg
 cpf
-endereco
+endereco    
 faltas
 float ling_est_c_bim1;
 float ling_est_c_bim2;
