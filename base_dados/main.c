@@ -83,7 +83,7 @@ void menu_adm(){
                 getchar();
                 printf("---------------------\n");
                 printf("Endereco: ");
-                scanf("%s", aluno.endereco);
+                scanf("%99[^\n]", aluno.endereco);
                 printf("---------------------\n");
                 incluir_aluno(db, aluno);
                 break;
@@ -121,7 +121,7 @@ void menu_adm(){
                 getchar();
                 printf("---------------------\n");
                 printf("Endereco: ");
-                scanf("%s", professor.endereco);
+                scanf("%99[^\n]", professor.endereco);
                 getchar();
                 printf("---------------------\n");
                 incluir_professor(db, professor);
@@ -156,7 +156,7 @@ void menu_adm(){
                 getchar();
                 printf("---------------------\n");
                 printf("Endereco: ");
-                scanf("%s", administrador.endereco);
+                scanf("%99[^\n]", administrador.endereco);
                 getchar();
                 printf("---------------------\n");
                 incluir_administrador(db, administrador);
