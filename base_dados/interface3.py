@@ -135,12 +135,15 @@ class PortalAluno(ctk.CTk):
             height=15,
             corner_radius=15,
             font=ctk.CTkFont(size=15),
-            command=self.sair,
+            command=self.sair,  # agora funciona
         )
         btn_sair.pack(side="bottom", pady=30)
-  
+
+    # 👇 método precisa estar dentro da classe!
     def sair(self):
-        self.destroy()
+        resposta = messagebox.askyesno("Confirmação", "Tem certeza que deseja sair?")
+        if resposta:
+            self.destroy()
 
 # tela do portal docente (usuario: docente)
 class PortalDocente(ctk.CTk):
@@ -213,7 +216,9 @@ class PortalDocente(ctk.CTk):
         btn_sair.pack(side="bottom", pady=30)
 
     def sair(self):
-        self.destroy()
+        resposta = messagebox.askyesno("Confirmação", "Tem certeza que deseja sair?")
+        if resposta:
+            self.destroy()
 
 # tela do portal administrador (usuario: administrador)
 class PortalAdm(ctk.CTk):
@@ -286,7 +291,9 @@ class PortalAdm(ctk.CTk):
         btn_sair.pack(side="bottom", pady=30)
 
     def sair(self):
-        self.destroy()
+        resposta = messagebox.askyesno("Confirmação", "Tem certeza que deseja sair?")
+        if resposta:
+            self.destroy() 
         
 # tela de login 
 class LoginApp(ctk.CTk):
