@@ -259,4 +259,54 @@ def  consultar_falta(db, matricula):
     else:
         return None
 
+def dar_nota(db, matricula, faltas):    
+    """
+    recebe db, matricula, faltas
+
+    retorna boolean True se logou com sucesso
+    Falso se as senha nao forem iguais
+    """
+
+    try:
+        query = f"UPDATE alunos_nova SET faltas = ? WHERE matricula = ?"
+        db.execute(query, (faltas,matricula))
+        return True
+    
+    except:
+        print(f"erro ao dar {faltas} faltas para aluno de matricula: {matricula}")
+        return False
+
+    
+def login_aluno(db, matricula, senha):
+    query = "SELECT senha FROM alunos_nova WHERE matricula=?"
+    db.execute(query,(matricula))
+
+    senha_db = db.fetchone()
+
+    senha_hash = hash_simples(senha)
+
+    if senha_db == senha_hash:
+        print("aluno logado com sucesso")
+        return True
+    
+    else:
+        print("erro ao logar como aluno")
+        return False
+
+
+def login_professor(db, cpf, senha):
+    query = "SELECT senha FROM professores WHERE cpf=?"
+    db.execute(query,(cpf))
+
+    senha_db = db.fetchone()
+
+    senha_hash = hash_simples(senha)
+
+    if senha_db == senha_hash:
+        print("professor logado com sucesso")
+        return True
+    
+    else:
+        print("erro ao logar como professor")
+        return False
     
