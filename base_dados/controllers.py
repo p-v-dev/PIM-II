@@ -324,6 +324,7 @@ def consultar_aluno(db, matricula):
        return{
             "nome" : dados[0],
             "sobrenome" : dados[1],
+            "matricula" : matricula,
             "turma" : dados[2],
             'ling_est_c_bim1' :  dados[3],
             'ling_est_c_bim2' :  dados[4],
