@@ -5,7 +5,7 @@ sqlite3 *db;
 void menu_adm(){
     int opt_menu;
 
-    //while(1){
+    
 
         
         printf("======MENU======\n");
@@ -175,7 +175,7 @@ void menu_adm(){
                 break;
             }
             case 8: {
-                char email[CAMPO_LONGO];  // Nome diferente para evitar conflito
+                char email[CAMPO_LONGO]; 
                 printf("======EXCLUIR PROFESSOR======\n");
                 printf("Email: ");
                 scanf("%s", email);
@@ -186,7 +186,7 @@ void menu_adm(){
                 break;
             }
             case 9: {
-                char email[CAMPO_LONGO];  // Nome diferente para evitar conflito
+                char email[CAMPO_LONGO];  
                 printf("======EXCLUIR ADMINISTRADOR======\n");
                 printf("Email: ");
                 scanf("%s", email);
@@ -197,7 +197,7 @@ void menu_adm(){
                 break;
             }
         }
-    //}
+   
 }
 
 void hash_simples(const char *senha, char *hash_resultado) {
@@ -228,7 +228,7 @@ int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
     hash_simples(senha, hash_senha);
     //printf("Hash calculado: %s\n", hash_senha);
     
-    // Prepara a query SQL
+    // Prepara a query 
     snprintf(query, sizeof(query), "SELECT senha FROM administradores WHERE cpf =%s", cpf);
     
     if (sqlite3_prepare_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
@@ -236,17 +236,18 @@ int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
         return -1;
     }
     
-    // Bind do parâmetro email
+    // Bind  email
     sqlite3_bind_text(stmt, 1, cpf, -1, SQLITE_STATIC);
     
-    // Executa a query
+    // Execute query
     if (sqlite3_step(stmt) == SQLITE_ROW) {
+
         // Pega o hash do banco de dados
         const char *hash_db = (const char*)sqlite3_column_text(stmt, 0);
         strncpy(hash_banco, hash_db, sizeof(hash_banco) - 1);
         hash_banco[sizeof(hash_banco) - 1] = '\0';
         
-       // printf("Hash do banco: %s\n", hash_banco);
+       
         
         // Compara os hashes
         if (strcmp(hash_senha, hash_banco) == 0) {
@@ -272,10 +273,6 @@ int main(){
     if(sqlite3_open("database.db", &db) == SQLITE_OK){
         char cpf_login[50];
         char senha_login[50];
-
-
-        
-
         printf("===Entrar===\n");
         printf("CPF:\n"); 
         scanf("%s", &cpf_login);  
