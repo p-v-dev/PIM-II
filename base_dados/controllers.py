@@ -230,9 +230,15 @@ def excluir_atividade(db, titulo):
         return None
     
 
-def dar_falta(db, matricula):
-
-    ...
+def dar_falta(db, matricula, falta):
+    try:
+        query = f"UPDATE alunos_nova SET falta = ? WHERE {matricula} = ?"
+        db.execute(query, (falta,matricula))
+        return True
+    
+    except:
+        print(f"erro ao dar {falta} faltas para aluno de matricula: {matricula}")
+        return False
 
 
 def  consultar_falta(db, matricula):
@@ -258,23 +264,6 @@ def  consultar_falta(db, matricula):
     
     else:
         return None
-
-def dar_nota(db, matricula, faltas):    
-    """
-    recebe db, matricula, faltas
-
-    retorna boolean True se logou com sucesso
-    Falso se as senha nao forem iguais
-    """
-
-    try:
-        query = f"UPDATE alunos_nova SET faltas = ? WHERE matricula = ?"
-        db.execute(query, (faltas,matricula))
-        return True
-    
-    except:
-        print(f"erro ao dar {faltas} faltas para aluno de matricula: {matricula}")
-        return False
 
     
 def login_aluno(db, matricula, senha):
@@ -310,3 +299,28 @@ def login_professor(db, cpf, senha):
         print("erro ao logar como professor")
         return False
     
+def consultar_aluno(db, matricula):
+    query = "SELECT nome, sobrenome, turma, ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, python_bim1, python_bim2, python_media, eng_soft_bim1, eng_soft_bim2, eng_soft_media, ia_bim1, ia_bim2, ia_media FROM alunos_nova WHERE matricula=?"
+    db.execute(query,(matricula))
+
+    dados = db.fetchone()
+    if dados:
+       return{
+            "nome" : dados[0],
+            "sobrenome" : dados[1],
+            "turma" : dados[3],
+            'ling_est_c_bim1' :  dados[4],
+            'ling_est_c_bim2' :  dados[5],
+            'ling_est_c_media' :  dados[6],
+            'python_bim1' :  dados[7],
+            'python_bim2' :  dados[8],
+            'python_media' :  dados[9],
+            'eng_soft_bim1' :  dados[10],
+            'eng_soft_bim2' :  dados[11],
+            'eng_soft_media' :  dados[12],
+            'ia_bim1' :  dados[13],
+            'ia_bim2' :  dados[14],
+            'ia_media' : dados[15],
+        }
+    else:
+        return None
