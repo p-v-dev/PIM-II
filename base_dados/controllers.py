@@ -267,6 +267,14 @@ def  consultar_falta(db, matricula):
 
     
 def login_aluno(db, matricula, senha):
+    """
+    recebe db, matricula, senha
+
+    retorna bool True se senha correta
+
+    False se estiver incorreto
+    """
+
     query = "SELECT senha FROM alunos_nova WHERE matricula=?"
     db.execute(query,(matricula))
 
@@ -284,6 +292,14 @@ def login_aluno(db, matricula, senha):
 
 
 def login_professor(db, cpf, senha):
+    """
+    recebe db, cpf, senha
+
+    retorna bool True se senha correta
+
+    False se estiver incorreto
+    """
+
     query = "SELECT senha FROM professores WHERE cpf=?"
     db.execute(query,(cpf))
 
