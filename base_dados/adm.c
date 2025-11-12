@@ -11,10 +11,9 @@ void incluir_aluno(sqlite3 *db, Aluno aluno){
     char *erro = 0;
     char senha_db[20]; 
 
-    // Faz hash da senha
+    //  hash senha
     hash_simples(aluno.senha, senha_db);
     
-    // Query corrigida 
     snprintf(sql, sizeof(sql),"INSERT INTO alunos_nova (nome, sobrenome, matricula, email, senha, rg, cpf, endereco, turma) VALUES('%s', '%s','%s', '%s','%s','%s','%s', '%s', '%s')", 
         aluno.nome,  
         aluno.sobrenome, 
@@ -106,7 +105,7 @@ void incluir_professor(sqlite3 *db, Professor professor){
     char *erro = 0;
     char senha_db[20];
 
-    // Faz hash da senha
+    //hash
     hash_simples(professor.senha, senha_db);
     
     snprintf(sql, sizeof(sql), 
@@ -186,7 +185,7 @@ void incluir_administrador(sqlite3 *db, Administrador administrador) {
     char *erro = 0;
     char senha_db[20];
 
-    // Faz hash da senha
+    //hash
     hash_simples(administrador.senha, senha_db);
     
     snprintf(sql, sizeof(sql), 

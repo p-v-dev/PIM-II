@@ -235,7 +235,7 @@ int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
         return -1;
     }
     
-    // Bind do parâmetro email
+    // Bind param email
     sqlite3_bind_text(stmt, 1, cpf, -1, SQLITE_STATIC);
     
     // Executa a query
@@ -246,7 +246,7 @@ int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
         hash_banco[sizeof(hash_banco) - 1] = '\0';
         
         
-        // Compara hashes
+        // Compara hash
         if (strcmp(hash_senha, hash_banco) == 0) {
             printf("Login bem-sucedido!\n");
             resultado = 1; // Login sucedido
@@ -287,7 +287,7 @@ int main(){
             menu_adm();
         }
 
-        sqlite3_close(db);  // Fecha banco de dados
+        sqlite3_close(db);  // Fecha  banco de dados
     } else {
         printf("Erro ao abrir o banco de dados!\n");
         return 1;
