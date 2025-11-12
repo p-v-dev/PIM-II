@@ -9,12 +9,12 @@
 void incluir_aluno(sqlite3 *db, Aluno aluno){
     char sql[1000];
     char *erro = 0;
-    char senha_db[20]; // Declaração correta da variável
+    char senha_db[20]; 
 
     // Faz hash da senha
     hash_simples(aluno.senha, senha_db);
     
-    // Query corrigida - removi a vírgula extra e adicionei turma
+    // Query corrigida 
     snprintf(sql, sizeof(sql),"INSERT INTO alunos_nova (nome, sobrenome, matricula, email, senha, rg, cpf, endereco, turma) VALUES('%s', '%s','%s', '%s','%s','%s','%s', '%s', '%s')", 
         aluno.nome,  
         aluno.sobrenome, 
@@ -109,7 +109,6 @@ void incluir_professor(sqlite3 *db, Professor professor){
     // Faz hash da senha
     hash_simples(professor.senha, senha_db);
     
-    // Query corrigida - removi vírgula extra e campo duplicado
     snprintf(sql, sizeof(sql), 
     "INSERT INTO professores (nome, sobrenome, disciplina, email, senha, rg, cpf, endereco) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');",
         professor.nome, 

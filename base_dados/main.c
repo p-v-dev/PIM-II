@@ -5,7 +5,7 @@ sqlite3 *db;
 void menu_adm(){
     int opt_menu;
 
-    //while(1){
+    
 
         
         printf("======MENU======\n");
@@ -175,7 +175,7 @@ void menu_adm(){
                 break;
             }
             case 8: {
-                char email[CAMPO_LONGO];  // Nome diferente para evitar conflito
+                char email[CAMPO_LONGO]; 
                 printf("======EXCLUIR PROFESSOR======\n");
                 printf("Email: ");
                 scanf("%s", email);
@@ -197,7 +197,6 @@ void menu_adm(){
                 break;
             }
         }
-    //}
 }
 
 void hash_simples(const char *senha, char *hash_resultado) {
@@ -226,9 +225,9 @@ int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
     
     // Calcula o hash da senha fornecida
     hash_simples(senha, hash_senha);
-    //printf("Hash calculado: %s\n", hash_senha);
     
-    // Prepara a query SQL
+    
+    // Prepara query
     snprintf(query, sizeof(query), "SELECT senha FROM administradores WHERE cpf =%s", cpf);
     
     if (sqlite3_prepare_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
@@ -246,19 +245,18 @@ int fazer_login(sqlite3 *db, const char *cpf, const char *senha) {
         strncpy(hash_banco, hash_db, sizeof(hash_banco) - 1);
         hash_banco[sizeof(hash_banco) - 1] = '\0';
         
-       // printf("Hash do banco: %s\n", hash_banco);
         
-        // Compara os hashes
+        // Compara hashes
         if (strcmp(hash_senha, hash_banco) == 0) {
             printf("Login bem-sucedido!\n");
-            resultado = 1; // Login bem-sucedido
+            resultado = 1; // Login sucedido
         } else {
             printf("Senha incorreta!\n");
             resultado = 0; // Senha incorreta
         }
     } else {
         printf("Usuário não encontrado!\n");
-        resultado = -1; // Usuário não encontrado
+        resultado = -1; // Usuario nao encontrado
     }
     
     sqlite3_finalize(stmt);
@@ -289,7 +287,7 @@ int main(){
             menu_adm();
         }
 
-        sqlite3_close(db);  // Fechar o banco de dados
+        sqlite3_close(db);  // Fecha banco de dados
     } else {
         printf("Erro ao abrir o banco de dados!\n");
         return 1;
