@@ -11,7 +11,6 @@ import os
 # ============================================================
 # Configuração do Gemini (API)
 # ============================================================
-#API_KEY = "AIzaSyAJ72U_oI3z1435M3WblU-Mnk_y8LbJQmM"
 
 API_KEY = os.getenv("API_KEY")
 
