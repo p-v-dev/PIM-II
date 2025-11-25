@@ -9,7 +9,7 @@
 void incluir_aluno(sqlite3 *db, Aluno aluno){
     char sql[1000];
     char *erro = 0;
-    char senha_db[20]; 
+    char senha_db[40]; 
 
     //  hash senha
     hash_simples(aluno.senha, senha_db);

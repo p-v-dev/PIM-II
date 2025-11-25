@@ -25,16 +25,13 @@ def hash_simples(senha):
     """
     SALT = "abds14"
     
-    # Combina senha + SALT 
     combinacao = senha + SALT
     
-    # Soma todos os caracteres 
+    
     soma = 0
     for char in combinacao:
         soma += ord(char)  # ord() equivale ao valor ASCII do char em C
     
-    # Converte para hexadecimal e multiplica por 123
-    # Usando format(soma * 123, 'x') para ser idêntico ao %x do snprintf
     hash_resultado = format(soma * 123, 'x')
     
     return hash_resultado
@@ -125,7 +122,12 @@ def consultar_notas(db, matricula):
     Retorna uma list de dicionarios ou valor None se houver erro
     """
 
-    query = "SELECT ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, python_bim1, python_bim2, python_media, eng_soft_bim1, eng_soft_bim2, eng_soft_media, ia_bim1, ia_bim2, ia_media  FROM alunos_nova WHERE matricula = ?"
+    query = '''SELECT 
+    ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, 
+    python_bim1, python_bim2, python_media, 
+    eng_soft_bim1, eng_soft_bim2, eng_soft_media, 
+    ia_bim1, ia_bim2, ia_media  
+    FROM alunos_nova WHERE matricula = ?'''
     try:
         db.execute(query, (matricula))
 
@@ -161,7 +163,7 @@ def consultar_notas(db, matricula):
 def criar_atividade(db, titulo, descricao, data_entrega=None, link=None):
 
     """
-    NAO DEIXE O CAMPO DE TITULO E DESCRICAO NULOS, VAI DAR ERRO
+    NAO DEIXE O CAMPO DE TITULO E DESCRICAO NULOS
 
     o campo de link e data de entrega PODEM ser nulos
 
@@ -179,13 +181,15 @@ def criar_atividade(db, titulo, descricao, data_entrega=None, link=None):
             return None
     
     if link:
-        db.execute('''INSERT INTO atividades (titulo, descricao, link, data_entrega)
+        db.execute('''INSERT INTO atividades 
+                   (titulo, descricao, link, data_entrega)
                     VALUES (?, ?, ?, ?)''', 
                     (titulo, descricao, link, data_entrega))
         return True
     
     else:
-        db.execute('''INSERT INTO atividades (titulo, descricao, data_entrega)
+        db.execute('''INSERT INTO atividades 
+                (titulo, descricao, data_entrega)
                 VALUES (?, ?, ?)''', 
                 (titulo, descricao, data_entrega))
         print(f"Atividade '{titulo}' adicionada")   
@@ -316,7 +320,12 @@ def login_professor(db, cpf, senha):
         return False
     
 def consultar_aluno(db, matricula):
-    query = "SELECT nome, sobrenome, turma, ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, python_bim1, python_bim2, python_media, eng_soft_bim1, eng_soft_bim2, eng_soft_media, ia_bim1, ia_bim2, ia_media FROM alunos_nova WHERE matricula=?"
+    query = '''SELECT nome, sobrenome, turma, 
+    ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, 
+    python_bim1, python_bim2, python_media, 
+    eng_soft_bim1, eng_soft_bim2, eng_soft_media, 
+    ia_bim1, ia_bim2, ia_media 
+    FROM alunos_nova WHERE matricula=?'''
     db.execute(query,(matricula))
 
     dados = db.fetchone()

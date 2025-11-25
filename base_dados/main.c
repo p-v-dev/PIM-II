@@ -48,7 +48,6 @@ void menu_adm(){
                 break;
             case 4: {
                 Aluno aluno;
-
                 printf("======ADICIONAR ALUNO======\n");
                 printf("Nome: ");
                 scanf("%s", aluno.nome);
@@ -90,7 +89,6 @@ void menu_adm(){
             }
             case 5: {
                 Professor professor;
-
                 printf("======ADICIONAR PROFESSOR======\n");
                 printf("Nome: ");
                 scanf("%s", professor.nome);
