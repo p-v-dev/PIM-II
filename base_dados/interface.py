@@ -337,7 +337,7 @@ class PortalDocente(BasePortal):
             text="Salvar Nota",
             fg_color="#34C759",
             hover_color="#28a745",
-            command=salvar_nota
+            command= ... ###USE DAR NOTA DO CONTROLLERS.PY
         ).pack(pady=20)
 
 # popup para consultar notas com médias
@@ -522,14 +522,10 @@ class LoginApp(ctk.CTk):
             portal = PortalAluno(nome_usuario=nome, email_usuario=email)
         elif self.tipo_usuario == "Docente":
             portal = PortalDocente(nome_usuario=nome, email_usuario=email)
-        else:
-            portal = PortalAdm(nome_usuario=nome, email_usuario=email)
 
         portal.mainloop()
 
-    # abre a janela de cadastro
-    def abrir_cadastro(self):
-        CadastroScreen(self)
+    # abre a janela de cadastr
 conn.close()
 
 # main (ponto de partida do sistema)
@@ -537,5 +533,3 @@ if __name__ == "__main__":
     
     app = LoginApp()
     app.mainloop()
-    
-
