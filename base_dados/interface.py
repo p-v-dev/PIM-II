@@ -2,18 +2,19 @@ import customtkinter as ctk
 from tkinter import messagebox
 import sqlite3
 import controllers
-from chatbot_interface import processar_mensagem_chatbot, apresentacao
+from chatbot import iniciar_chatbot, apresentacao
 
-
-conn = sqlite3.connect("database.db")
-db = conn.cursor()
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
+conn = sqlite3.connect('database.db')
+db = conn.cursor()
 
 # classe base (estrutura padrão dos portais)
 class BasePortal(ctk.CTk):
     def __init__(self, nome_usuario, email_usuario, titulo, subtitulo):
         super().__init__()
+        self.conn = sqlite3.connect("database.db")
+        self.db = self.conn.cursor()
         self.title(titulo)
         self.geometry("900x550")
         self.configure(fg_color="#001A80")
@@ -53,82 +54,213 @@ class BasePortal(ctk.CTk):
         if messagebox.askyesno("Confirmação", "Tem certeza que deseja sair?"):
             self.destroy()
 
+
 # portal do aluno (estudante)
 class PortalAluno(BasePortal):
     def __init__(self, nome_usuario, email_usuario):
         super().__init__(nome_usuario, email_usuario,
                          "Portal do(a) Aluno(a)",
                          f"Bem-vindo(a), Estudante!")
-
-        # botões principais do aluno
-        ctk.CTkButton(self.main_frame, text="Aulas", width=180, height=110,
-                      corner_radius=15, fg_color="#34C759",
-                      hover_color="#28a745", text_color="white",
-                      font=ctk.CTkFont(size=16)).pack(pady=10)
-
-        ctk.CTkButton(self.main_frame, text="Notas", width=180, height=110,
-                      corner_radius=15, fg_color="#34C759",
-                      hover_color="#28a745", text_color="white",
-                      font=ctk.CTkFont(size=16)).pack(pady=10)
         
-        ctk.CTkButton(self.main_frame, text="Atividades", width=180, height=110,
-                      corner_radius=15, fg_color="#34C759",
-                      hover_color="#28a745", text_color="white",
-                      font=ctk.CTkFont(size=16), 
-                      command = self.listar_atividades).pack(pady=10)
+        # frame interno para organizar os botões
+        botoes_frame = ctk.CTkFrame(self.main_frame, fg_color="white", corner_radius=0)
+        botoes_frame.pack(pady=10)
 
-        # botão do chatbot
-        chatbot_btn = ctk.CTkButton(
-            self.main_frame, text="🤖", width=50, height=50,
-            corner_radius=25, fg_color="#287DFD",
-            hover_color="#231FE6", text_color="white",
-            font=ctk.CTkFont(size=20),
-            command=self.abrir_chatbot  # abre o chat
-        )
+        # lista de botões do aluno
+        botoes = [
+            ("Faltas", self.consultar_faltas_popup),
+            ("Minhas Notas", self.consultar_notas_popup),
+            ("Atividades", self.listar_atividades)
+        ]
+
+
+        cols = 3  # 3 colunas
+        for i, (texto, func) in enumerate(botoes):
+            btn = ctk.CTkButton(
+                botoes_frame,
+                text=texto,
+                width=180,
+                height=110,
+                corner_radius=15,
+                fg_color="#34C759",
+                hover_color="#28a745",
+                text_color="white",
+                font=ctk.CTkFont(size=16),
+                command=func
+            )
+            btn.grid(row=i // cols, column=i % cols, padx=15, pady=15)
+
+        # botão chatbot
+        chatbot_btn = ctk.CTkButton(self.main_frame, text="🤖", width=50, height=50,
+                                    corner_radius=25, fg_color="#287DFD",
+                                    hover_color="#231FE6", text_color="white",
+                                    font=ctk.CTkFont(size=20),
+                                    command=self.abrir_chatbot)
         chatbot_btn.place(relx=0.95, rely=0.95, anchor="se")
+        
+    def consultar_notas_popup(self):
+        popup = ctk.CTkToplevel(self)
+        popup.title("Consultar Notas")
+        popup.geometry("400x300")
+        popup.transient(self)
+        popup.grab_set()
+        popup.focus_force()
+
+        ctk.CTkLabel(popup, text="Digite sua matrícula:").pack(pady=10)
+        matricula_entry = ctk.CTkEntry(popup, width=250)
+        matricula_entry.pack(pady=(0, 15))
+
+        def consultar():
+            matricula = matricula_entry.get().strip()
+            if not matricula:
+                messagebox.showerror("Erro", "Digite uma matrícula válida.")
+                return
+
+            dados = controllers.consultar_notas(db, matricula)
+            if dados is None:
+                messagebox.showerror("Erro", "Aluno não encontrado.")
+                return
+
+        # calcula as médias ignorando None
+            def calc_media(b1, b2):
+                notas = [n for n in (b1, b2) if n is not None]
+                return round(sum(notas)/len(notas), 2) if notas else None
+
+            ling_est_c_media = calc_media(dados['ling_est_c_bim1'], dados['ling_est_c_bim2'])
+            python_media = calc_media(dados['python_bim1'], dados['python_bim2'])
+            eng_soft_media = calc_media(dados['eng_soft_bim1'], dados['eng_soft_bim2'])
+            ia_media = calc_media(dados['ia_bim1'], dados['ia_bim2'])
+
+            texto = (
+                f"Linguagem e Comunicação:\n  1º Bim: {dados['ling_est_c_bim1']}\n"
+                f"  2º Bim: {dados['ling_est_c_bim2']}\n  Média: {ling_est_c_media}\n\n"
+                f"Python:\n  1º Bim: {dados['python_bim1']}\n"
+                f"  2º Bim: {dados['python_bim2']}\n  Média: {python_media}\n\n"
+                f"Engenharia de Software:\n  1º Bim: {dados['eng_soft_bim1']}\n"
+                f"  2º Bim: {dados['eng_soft_bim2']}\n  Média: {eng_soft_media}\n\n"
+                f"IA:\n  1º Bim: {dados['ia_bim1']}\n"
+                f"  2º Bim: {dados['ia_bim2']}\n  Média: {ia_media}"
+            )
+
+            messagebox.showinfo("Suas Notas", texto)
+
+        ctk.CTkButton(popup, text="Consultar", command=consultar).pack(pady=15)
+
+        ctk.CTkButton(
+            popup,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=popup.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
+
+
+    def consultar_faltas_popup(self):
+        popup = ctk.CTkToplevel(self)
+        popup.title("Consultar Faltas")
+        popup.geometry("400x250")
+        popup.transient(self) 
+        popup.grab_set()
+        popup.focus_force()
+
+        ctk.CTkLabel(popup, text="Digite sua matrícula:").pack(pady=10)
+        matricula_entry = ctk.CTkEntry(popup, width=250)
+        matricula_entry.pack()
+
+        def consultar():
+            matricula = matricula_entry.get().strip()
+
+            if not matricula:
+                messagebox.showerror("Erro", "Digite uma matrícula válida.")
+                return
+
+            conn = sqlite3.connect("database.db")
+            db = conn.cursor()
+            faltas = controllers.consultar_faltas(db, matricula)
+            conn.close()
+
+            if faltas is None:
+                messagebox.showerror("Erro", "Matrícula não encontrada.")
+            else:
+                messagebox.showinfo("Suas Faltas", f"Total de faltas: {faltas}")
+
+        ctk.CTkButton(popup, text="Consultar", command=consultar).pack(pady=15)
+
+        ctk.CTkButton(
+            popup,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=popup.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
+
+        
+    def abrir_chatbot(self):
+        janela = ctk.CTkToplevel(self)
+        janela.title("Chatbot Sofia")
+        janela.geometry("500x600")
+        janela.transient(self) 
+        janela.grab_set()      
+        janela.focus_force()
+
+        chat_box = ctk.CTkTextbox(janela, width=480, height=500)
+        chat_box.pack(pady=10)
+
+        # apresentação da Sofia no chat
+        chat_box.insert("end", apresentacao() + "\n")
+
+        entrada = ctk.CTkEntry(janela, width=400)
+        entrada.pack(side="left", padx=10, pady=10)
+
+        enviar_btn = ctk.CTkButton(
+            janela, 
+            text="Enviar",
+            command=lambda: self.enviar_mensagem_chat(entrada, chat_box)
+        )
+        enviar_btn.pack(side="right", padx=10, pady=10)
 
     def listar_atividades(self):
-            janela = ctk.CTkToplevel(self)
-            janela.title("Minhas Atividades")
-            janela.geometry("800x500")
-            janela.configure(fg_color="white")
+        janela = ctk.CTkToplevel(self)
+        janela.title("Minhas Atividades")
+        janela.geometry("800x500")
+        janela.configure(fg_color="white")
+        janela.transient(self) 
+        janela.grab_set()      
+        janela.focus_force()
 
-            janela.transient(self) 
-            janela.grab_set()      
-            janela.focus_force()
+        ctk.CTkLabel(janela, text="Minhas Atividades",
+        font=ctk.CTkFont(size=20, weight="bold"),
+        text_color="#001A80").pack(pady=15)
+        frame_lista = ctk.CTkScrollableFrame(janela, width=750, height=350, fg_color="#f2f2f2")
+        frame_lista.pack(pady=10)
 
-            ctk.CTkLabel(janela, text="Minhas Atividades",
-            font=ctk.CTkFont(size=20, weight="bold"),
-            text_color="#001A80").pack(pady=15)
-            frame_lista = ctk.CTkScrollableFrame(janela, width=750, height=350, fg_color="#f2f2f2")
-            frame_lista.pack(pady=10)
+        atividades = controllers.listar_atividades(db)
 
-            atividades = controllers.listar_atividades(db)
+        ctk.CTkLabel(frame_lista, text="Título", width=200, anchor="w", 
+                 font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=10, pady=5)
+        
+        ctk.CTkLabel(frame_lista, text="Descrição", width=300, anchor="w",
+                 font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, padx=10, pady=5)
+        
+        ctk.CTkLabel(frame_lista, text="Data de Entrega", width=150, anchor="w",
+                 font=ctk.CTkFont(weight="bold")).grid(row=0, column=2, padx=10, pady=5)
+        
+        ctk.CTkLabel(frame_lista, text="Link", width=100, anchor="w",
+                 font=ctk.CTkFont(weight="bold")).grid(row=0, column=3, padx=10, pady=5)
 
-            ctk.CTkLabel(frame_lista, text="Título", width=200, anchor="w", 
-                    font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=10, pady=5)
+        
+        for i, atividade in enumerate(atividades, start=1):
+            ctk.CTkLabel(frame_lista, text=atividade['titulo'], anchor="w").grid(
+                row=i, column=0, sticky="w", padx=10, pady=3)
+            ctk.CTkLabel(frame_lista, text=atividade['descricao'], anchor="w").grid(
+                row=i, column=1, sticky="w", padx=10, pady=3)
+            ctk.CTkLabel(frame_lista, text=atividade['data_entrega'], anchor="w").grid(
+                row=i, column=2, sticky="w", padx=10, pady=3)
             
-            ctk.CTkLabel(frame_lista, text="Descrição", width=300, anchor="w",
-                    font=ctk.CTkFont(weight="bold")).grid(row=0, column=1, padx=10, pady=5)
-            
-            ctk.CTkLabel(frame_lista, text="Data de Entrega", width=150, anchor="w",
-                    font=ctk.CTkFont(weight="bold")).grid(row=0, column=2, padx=10, pady=5)
-            
-            ctk.CTkLabel(frame_lista, text="Link", width=100, anchor="w",
-                    font=ctk.CTkFont(weight="bold")).grid(row=0, column=3, padx=10, pady=5)
+        link_text = atividade['link'] if atividade['link'] else "Sem link"
+        ctk.CTkLabel(frame_lista, text=link_text, anchor="w").grid(
+            row=i, column=3, sticky="w", padx=10, pady=3)
 
-            
-            for i, atividade in enumerate(atividades, start=1):
-                ctk.CTkLabel(frame_lista, text=atividade['titulo'], anchor="w").grid(
-                    row=i, column=0, sticky="w", padx=10, pady=3)
-                ctk.CTkLabel(frame_lista, text=atividade['descricao'], anchor="w").grid(
-                    row=i, column=1, sticky="w", padx=10, pady=3)
-                ctk.CTkLabel(frame_lista, text=atividade['data_entrega'], anchor="w").grid(
-                    row=i, column=2, sticky="w", padx=10, pady=3)
-                
-            link_text = atividade['link'] if atividade['link'] else "Sem link"
-            ctk.CTkLabel(frame_lista, text=link_text, anchor="w").grid(
-                row=i, column=3, sticky="w", padx=10, pady=3)
 
 # aplicação do chatbot ================================================
         
@@ -173,10 +305,21 @@ class PortalDocente(BasePortal):
         janela.title("Lista de Alunos")
         janela.geometry("850x500")
         janela.configure(fg_color="white")
+        janela.transient(self) 
+        janela.grab_set()      
+        janela.focus_force()
 
         ctk.CTkLabel(janela, text="Alunos Cadastrados",
                     font=ctk.CTkFont(size=20, weight="bold"),
                     text_color="#001A80").pack(pady=10)
+        
+        ctk.CTkButton(
+            janela,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=janela.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
 
         # frame com a lista
         self.frame_lista_alunos = ctk.CTkScrollableFrame(
@@ -195,10 +338,10 @@ class PortalDocente(BasePortal):
     def _carregar_alunos(self):
         for widget in self.frame_lista_alunos.winfo_children():
             widget.destroy()
-
+            
         self._cabecalho_alunos()
+        
         alunos = controllers.listar_alunos(db)
-
 
         if not alunos:
             ctk.CTkLabel(
@@ -216,12 +359,16 @@ class PortalDocente(BasePortal):
             ctk.CTkLabel(self.frame_lista_alunos, text=aluno['turma'], anchor="w").grid(row=i, column=2, sticky="w", padx=10)
             ctk.CTkLabel(self.frame_lista_alunos, text=aluno['email'], anchor="w").grid(row=i, column=3, sticky="w", padx=10)
 
+
     # abre nova janela pra gerenciar atividades
     def abrir_gerenciar_atividades(self):
         janela = ctk.CTkToplevel(self)
         janela.title("Gerenciar Atividades")
         janela.geometry("750x450")
         janela.configure(fg_color="white")
+        janela.transient(self) 
+        janela.grab_set()      
+        janela.focus_force()
 
         ctk.CTkLabel(janela, text="Lista de Atividades",
                      font=ctk.CTkFont(size=20, weight="bold"),
@@ -243,6 +390,13 @@ class PortalDocente(BasePortal):
         ctk.CTkButton(frame_botoes, text="Excluir Atividade", fg_color="#E57373",
                       hover_color="#EF5350", command=self.excluir_atividade_popup).grid(row=0, column=1, padx=10)
 
+        ctk.CTkButton(
+            janela,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=janela.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
 
     # cabeçalho da tabela de atividades
     def _cabecalho_lista(self):
@@ -250,14 +404,17 @@ class PortalDocente(BasePortal):
         ctk.CTkLabel(self.frame_lista, text="Descrição", width=300, anchor="w").grid(row=0, column=1, padx=10)
         ctk.CTkLabel(self.frame_lista, text="Data de Entrega", width=150, anchor="w").grid(row=0, column=2, padx=10)
 
-
     # carrega atividades do banco de dados
     def _carregar_atividades(self):
         for widget in self.frame_lista.winfo_children():
             widget.destroy()
         self._cabecalho_lista()
 
+        conn = sqlite3.connect("database.db")
+        db = conn.cursor()
         atividades = controllers.listar_atividades(db)
+        conn.close()
+
         for i, a in enumerate(atividades, start=1):
             ctk.CTkLabel(self.frame_lista, text=a['titulo'], anchor="w").grid(row=i, column=0, sticky="w", padx=10)
             ctk.CTkLabel(self.frame_lista, text=a['descricao'], anchor="w").grid(row=i, column=1, sticky="w", padx=10)
@@ -270,6 +427,9 @@ class PortalDocente(BasePortal):
         popup.title("Criar Atividade")
         popup.geometry("500x400")
         popup.configure(fg_color="white")
+        popup.transient(self) 
+        popup.grab_set()      
+        popup.focus_force()
 
         campos = {}
         for label in ["Título", "Descrição", "Data de Entrega (AAAA-MM-DD)", "Link (opcional)"]:
@@ -277,21 +437,60 @@ class PortalDocente(BasePortal):
             campos[label] = ctk.CTkEntry(popup, width=300)
             campos[label].pack(pady=5)
 
-       # USE CRIAR ATIVIDADE DO CONTROLLERS.PY
-        #+++++++++++++++++++++++++++++++++++++++++++++
+        # botão salvar (grava no banco)
+        def salvar():
+            titulo = campos["Título"].get()
+            descricao = campos["Descrição"].get()
+            data = campos["Data de Entrega (AAAA-MM-DD)"].get()
+            link = campos["Link (opcional)"].get() or None
+
+            conn = sqlite3.connect("database.db")
+            db = conn.cursor()
+            sucesso = controllers.criar_atividade(db, titulo, descricao, data, link)
+            conn.commit()
+            conn.close()
+
+            if sucesso:
+                messagebox.showinfo("Sucesso", f"Atividade '{titulo}' criada com sucesso!")
+                popup.destroy()
+                self._carregar_atividades()
+            else:
+                messagebox.showerror("Erro", "Erro ao criar atividade. Verifique os dados.")
+
+        ctk.CTkButton(popup, text="Salvar", fg_color="#34C759", command=salvar).pack(pady=10)
+
     # popup - excluir atividade
     def excluir_atividade_popup(self):
         popup = ctk.CTkToplevel(self)
         popup.title("Excluir Atividade")
         popup.geometry("400x150")
         popup.configure(fg_color="white")
+        popup.transient(self) 
+        popup.grab_set()      
+        popup.focus_force()
+
 
         ctk.CTkLabel(popup, text="Título da Atividade a excluir:").pack(pady=10)
         entry = ctk.CTkEntry(popup, width=300)
         entry.pack(pady=5)
 
-        # USE excluir atividade NOTA DO CONTROLLERS.PY
-        #+++++++++++++++++++++++++++++++++++++++++++++
+        def excluir():
+            titulo = entry.get()
+
+            conn = sqlite3.connect("database.db")
+            db = conn.cursor()
+            sucesso = controllers.excluir_atividade(db, titulo)
+            conn.commit()
+            conn.close()
+
+            if sucesso:
+                messagebox.showinfo("Sucesso", f"Atividade '{titulo}' excluída com sucesso!")
+                popup.destroy()
+                self._carregar_atividades()
+            else:
+                messagebox.showerror("Erro", "Erro ao excluir atividade. Verifique o título.")
+
+        ctk.CTkButton(popup, text="Excluir", fg_color="#E57373", command=excluir).pack(pady=10)
 
     # popup - dar nota ao aluno
     def dar_nota_popup(self):
@@ -299,6 +498,9 @@ class PortalDocente(BasePortal):
         popup.title("Lançar Nota")
         popup.geometry("450x400")
         popup.configure(fg_color="white")
+        popup.transient(self) 
+        popup.grab_set()      
+        popup.focus_force()
 
         # MATRÍCULA
         ctk.CTkLabel(popup, text="Matrícula do aluno:", font=ctk.CTkFont(size=15)).pack(pady=5)
@@ -327,9 +529,48 @@ class PortalDocente(BasePortal):
         nota_entry = ctk.CTkEntry(popup, width=100)
         nota_entry.pack()
 
-        # USE DAR NOTA DO CONTROLLERS.PY
-        #+++++++++++++++++++++++++++++++++++++++++++++
-        
+        # FUNÇÃO interna para salvar no banco
+        def salvar_nota():
+            matricula = matricula_entry.get()
+            materia = materia_option.get()
+            nota = nota_entry.get()
+
+            # validação da nota
+            try:
+                nota = float(nota)
+                if nota < 0 or nota > 10:
+                    raise ValueError
+            except:
+                messagebox.showerror("Erro", "A nota deve ser um número entre 0 e 10!")
+                return
+
+            # converte nome da matéria para coluna correta do banco
+            mapa_colunas = {
+                "Linguagem Estruturada (B1)": "ling_est_c_bim1",
+                "Linguagem Estruturada (B2)": "ling_est_c_bim2",
+                "Python (B1)": "python_bim1",
+                "Python (B2)": "python_bim2",
+                "Engenharia de Software (B1)": "eng_soft_bim1",
+                "Engenharia de Software (B2)": "eng_soft_bim2",
+                "Inteligência Artificial (B1)": "ia_bim1",
+                "Inteligência Artificial (B2)": "ia_bim2",
+            }
+
+            coluna = mapa_colunas[materia]
+
+            # salva no banco
+            conn = sqlite3.connect("database.db")
+            db = conn.cursor()
+
+            try:
+                db.execute(f"UPDATE alunos_nova SET {coluna} = ? WHERE matricula = ?", (nota, matricula))
+                conn.commit()
+                messagebox.showinfo("Sucesso", f"Nota registrada em {materia}!")
+                popup.destroy()
+            except:
+                messagebox.showerror("Erro", "Falha ao registrar a nota.")
+            
+            conn.close()
 
         # botão confirmar
         ctk.CTkButton(
@@ -337,15 +578,27 @@ class PortalDocente(BasePortal):
             text="Salvar Nota",
             fg_color="#34C759",
             hover_color="#28a745",
-            command= ... ###USE DAR NOTA DO CONTROLLERS.PY
+            command=salvar_nota
         ).pack(pady=20)
+        
+        ctk.CTkButton(
+            popup,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=popup.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
 
 # popup para consultar notas com médias
     def consultar_notas_popup(self):
         popup = ctk.CTkToplevel(self)
         popup.title("Consultar Notas do Aluno")
-        popup.geometry("500x500")
+        popup.geometry("500x600")
         popup.configure(fg_color="white")
+
+        popup.transient(self) 
+        popup.grab_set()      
+        popup.focus_force()
 
         # Matrícula
         ctk.CTkLabel(popup, text="Matrícula do aluno:", font=ctk.CTkFont(size=15)).pack(pady=5)
@@ -363,29 +616,53 @@ class PortalDocente(BasePortal):
                 messagebox.showerror("Erro", "Aluno não encontrado ou erro ao consultar notas!")
                 return
 
-            # pega o primeiro registro (normalmente só tem um)
-            n = notas[0]
+            # não use n = notas[0], notas já é um dicionário
+            n = notas  # <--- CORREÇÃO
 
-            # Calcula médias automaticamente (se alguma nota for None, ignora)
+            # Calcula médias, ignorando notas None
             medias = {}
             for mat in ["ling_est_c", "python", "eng_soft", "ia"]:
-                bim1 = n[f"{mat}_bim1"] or 0
-                bim2 = n[f"{mat}_bim2"] or 0
-                medias[mat] = round((bim1 + bim2)/2, 2)
+                bim1 = n[f"{mat}_bim1"]
+                bim2 = n[f"{mat}_bim2"]
 
-            # Mostra as notas e médias
+                # cálculo da média
+                if bim1 is not None and bim2 is not None:
+                    medias[mat] = round((bim1 + bim2)/2, 2)
+                else:
+                    medias[mat] = None
+
+            # Formata para exibição
             texto = ""
             for mat in ["ling_est_c", "python", "eng_soft", "ia"]:
-                texto += f"{mat.upper()}:\n"
-                texto += f"  B1: {n[f'{mat}_bim1']}\n"
-                texto += f"  B2: {n[f'{mat}_bim2']}\n"
-                texto += f"  Média: {medias[mat]}\n\n"
+                b1_disp = n[f"{mat}_bim1"] if n[f"{mat}_bim1"] is not None else "-"
+                b2_disp = n[f"{mat}_bim2"] if n[f"{mat}_bim2"] is not None else "-"
+                media_disp = medias[mat] if medias[mat] is not None else "-"
+                
+                texto += f"{mat.replace('_',' ').title()}:\n"
+                texto += f"  1º Bim: {b1_disp}\n"
+                texto += f"  2º Bim: {b2_disp}\n"
+                texto += f"  Média: {media_disp}\n\n"
 
+            # Exibe as notas em um label
             notas_label = ctk.CTkLabel(popup, text=texto, justify="left", font=ctk.CTkFont(size=14))
             notas_label.pack(pady=10)
+        
+        # Botão Consultar
+        ctk.CTkButton(
+            popup,
+            text="Consultar",
+            fg_color="#34C759",
+            hover_color="#28a745",
+            command=mostrar_notas
+        ).pack(pady=10)
 
-        # botão confirmar
-        ctk.CTkButton(popup, text="Consultar", fg_color="#34C759", hover_color="#28a745", command=mostrar_notas).pack(pady=20)
+        ctk.CTkButton(
+            popup,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=popup.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
 
     # popup para dar falta
     def dar_falta_popup(self):
@@ -393,6 +670,10 @@ class PortalDocente(BasePortal):
         popup.title("Lançar Falta")
         popup.geometry("400x300")
         popup.configure(fg_color="white")
+
+        popup.transient(self) 
+        popup.grab_set()      
+        popup.focus_force()
 
         # Matrícula
         ctk.CTkLabel(popup, text="Matrícula do aluno:", font=ctk.CTkFont(size=15)).pack(pady=5)
@@ -430,7 +711,14 @@ class PortalDocente(BasePortal):
         # botão salvar
         ctk.CTkButton(popup, text="Salvar Falta", fg_color="#E57373", hover_color="#EF5350",
                       command=salvar_falta).pack(pady=20)
-
+        
+        ctk.CTkButton(
+            popup,
+            text="Voltar",
+            fg_color="#007BFF",       
+            hover_color="#0056b3",
+            command=popup.destroy
+        ).pack(side="bottom", anchor="e", padx=10, pady=10)
 
 # tela de login (primeira tela)
 class LoginApp(ctk.CTk):
@@ -455,7 +743,7 @@ class LoginApp(ctk.CTk):
         tipo_frame.pack(pady=(0, 15))
 
         self.btns = {}
-        for tipo in ["Aluno", "Docente", "Administrador"]:
+        for tipo in ["Aluno", "Docente"]:
             btn = ctk.CTkButton(tipo_frame, text=tipo, width=110, corner_radius=15,
                                 fg_color="#34C759", hover_color="#28a745", text_color="white",
                                 command=lambda t=tipo: self.selecionar_tipo(t))
@@ -487,11 +775,6 @@ class LoginApp(ctk.CTk):
         ctk.CTkButton(frame, text="Entrar", fg_color="#34C759", hover_color="#28a745",
                       text_color="white", corner_radius=10, width=200, height=40,
                       command=self.login).pack(pady=(10, 25))
-
-        # botão cadastrar
-        ctk.CTkButton(frame, text="Cadastre-se", fg_color="#d3d3d3", text_color="black",
-                      hover_color="#c0c0c0", corner_radius=10, width=120, height=30,
-                      command=self.abrir_cadastro).pack(pady=(0, 20))
 
     # muda o tipo de usuário selecionado
     def selecionar_tipo(self, tipo):
@@ -525,11 +808,7 @@ class LoginApp(ctk.CTk):
 
         portal.mainloop()
 
-    # abre a janela de cadastr
-conn.close()
-
 # main (ponto de partida do sistema)
 if __name__ == "__main__":
-    
     app = LoginApp()
     app.mainloop()
