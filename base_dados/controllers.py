@@ -25,16 +25,13 @@ def hash_simples(senha):
     """
     SALT = "abds14"
     
-    # Combina senha + SALT 
     combinacao = senha + SALT
     
-    # Soma todos os caracteres 
+    
     soma = 0
     for char in combinacao:
         soma += ord(char)  # ord() equivale ao valor ASCII do char em C
     
-    # Converte para hexadecimal e multiplica por 123
-    # Usando format(soma * 123, 'x') para ser idêntico ao %x do snprintf
     hash_resultado = format(soma * 123, 'x')
     
     return hash_resultado
@@ -122,41 +119,43 @@ def dar_nota(db, materia, matricula, nota):
 
 def consultar_notas(db, matricula):
     """
-    Retorna um dicionário com as notas do aluno, ou None se não existir.
+    Retorna uma list de dicionarios ou valor None se houver erro
     """
+
+    query = '''SELECT 
+    ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, 
+    python_bim1, python_bim2, python_media, 
+    eng_soft_bim1, eng_soft_bim2, eng_soft_media, 
+    ia_bim1, ia_bim2, ia_media  
+    FROM alunos_nova WHERE matricula = ?'''
     try:
-        query = """
-            SELECT ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media,
-                   python_bim1, python_bim2, python_media,
-                   eng_soft_bim1, eng_soft_bim2, eng_soft_media,
-                   ia_bim1, ia_bim2, ia_media
-            FROM alunos_nova
-            WHERE matricula = ?
-        """
         db.execute(query, (matricula,))
-        result = db.fetchone()
 
-        if result:
-            return {
-                "ling_est_c_bim1": result[0],
-                "ling_est_c_bim2": result[1],
-                "ling_est_c_media": result[2],
-                "python_bim1": result[3],
-                "python_bim2": result[4],
-                "python_media": result[5],
-                "eng_soft_bim1": result[6],
-                "eng_soft_bim2": result[7],
-                "eng_soft_media": result[8],
-                "ia_bim1": result[9],
-                "ia_bim2": result[10],
-                "ia_media": result[11],
-            }
-        else:
-            return None
-    except Exception as e:
-        print("Erro ao consultar notas:", e)
+        data = db.fetchall()
+        
+        notas = []
+
+        for nota in data:
+            notas.append({
+                'ling_est_c_bim1' : nota[0],
+                'ling_est_c_bim2' : nota[1],
+                'ling_est_c_media' : nota[2],
+                'python_bim1' : nota[3],
+                'python_bim2' : nota[4],
+                'python_media' : nota[5],
+                'eng_soft_bim1' : nota[6],
+                'eng_soft_bim2' : nota[7],
+                'eng_soft_media' : nota[8],
+                'ia_bim1' : nota[9],
+                'ia_bim2' : nota[10],
+                'ia_media' : nota[11],
+            })
+        return notas
+
+    except:
+
+        print("erro ao consultar notas")
         return None
-
     
 
 #criar atividades
@@ -164,7 +163,7 @@ def consultar_notas(db, matricula):
 def criar_atividade(db, titulo, descricao, data_entrega=None, link=None):
 
     """
-    NAO DEIXE O CAMPO DE TITULO E DESCRICAO NULOS, VAI DAR ERRO
+    NAO DEIXE O CAMPO DE TITULO E DESCRICAO NULOS
 
     o campo de link e data de entrega PODEM ser nulos
 
@@ -182,15 +181,17 @@ def criar_atividade(db, titulo, descricao, data_entrega=None, link=None):
             return None
     
     if link:
-        db.execute('''INSERT INTO atividades (titulo, descricao, link, data_entrega)
+        db.execute('''INSERT INTO atividades 
+                   (titulo, descricao, link, data_entrega)
                     VALUES (?, ?, ?, ?)''', 
-                    (titulo, descricao, link, data_entrega))
+                    (titulo, descricao, link, data_entrega,))
         return True
     
     else:
-        db.execute('''INSERT INTO atividades (titulo, descricao, data_entrega)
+        db.execute('''INSERT INTO atividades 
+                (titulo, descricao, data_entrega)
                 VALUES (?, ?, ?)''', 
-                (titulo, descricao, data_entrega))
+                (titulo, descricao, data_entrega,))
         print(f"Atividade '{titulo}' adicionada")   
         return True
         
@@ -224,7 +225,7 @@ def listar_atividades(db):
 def excluir_atividade(db, titulo):
 
     try:
-        db.execute("FROM atividades DELETE WHERE titulo = ?", (titulo))
+        db.execute("FROM atividades DELETE WHERE titulo = ?", (titulo,))
         print(f"atividade {titulo} deletada ")
         return True
 
@@ -236,7 +237,7 @@ def excluir_atividade(db, titulo):
 def dar_falta(db, matricula, falta):
     try:
         query = f"UPDATE alunos_nova SET falta = ? WHERE {matricula} = ?"
-        db.execute(query, (falta,matricula))
+        db.execute(query, (falta,matricula,))
         return True
     
     except:
@@ -244,21 +245,29 @@ def dar_falta(db, matricula, falta):
         return False
 
 
-def consultar_faltas(db, matricula):
-    try:
-        query = "SELECT faltas FROM alunos_nova WHERE matricula = ?"
-        result = db.execute(query, (matricula,)).fetchone()
+def  consultar_falta(db, matricula):
 
-        if result:
-            return result[0]  # retorna só o número de faltas
-        else:
-            return None
+    """
+    Retorna um dicionario 
+    {
+    matricula : str,
+    faltas : int
+    }
+    """
+    query = "SELECT faltas FROM alunos_nova WHERE matricula = ?"
 
-    except Exception as e:
-        print("Erro ao consultar faltas:", e)
+    db.execute(query, (matricula,))
+
+    data = db.fetchone()
+
+    if data:
+        return{
+            'matricula' : matricula,
+            'faltas' : data[0]
+        }
+    
+    else:
         return None
-
-
 
     
 def login_aluno(db, matricula, senha):
@@ -271,16 +280,15 @@ def login_aluno(db, matricula, senha):
     """
 
     query = "SELECT senha FROM alunos_nova WHERE matricula=?"
-    db.execute(query,(matricula))
+    db.execute(query, (matricula,))
 
     senha_db = db.fetchone()
 
     senha_hash = hash_simples(senha)
 
-    if senha_db == senha_hash:
+    if senha_db and senha_db[0] == senha_hash:
         print("aluno logado com sucesso")
         return True
-    
     else:
         print("erro ao logar como aluno")
         return False
@@ -296,23 +304,27 @@ def login_professor(db, cpf, senha):
     """
 
     query = "SELECT senha FROM professores WHERE cpf=?"
-    db.execute(query,(cpf))
+    db.execute(query, (cpf,))
 
     senha_db = db.fetchone()
 
     senha_hash = hash_simples(senha)
 
-    if senha_db == senha_hash:
+    if senha_db and senha_db[0] == senha_hash:
         print("professor logado com sucesso")
         return True
-    
     else:
         print("erro ao logar como professor")
         return False
     
 def consultar_aluno(db, matricula):
-    query = "SELECT nome, sobrenome, turma, ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, python_bim1, python_bim2, python_media, eng_soft_bim1, eng_soft_bim2, eng_soft_media, ia_bim1, ia_bim2, ia_media FROM alunos_nova WHERE matricula=?"
-    db.execute(query,(matricula))
+    query = '''SELECT nome, sobrenome, turma, 
+    ling_est_c_bim1, ling_est_c_bim2, ling_est_c_media, 
+    python_bim1, python_bim2, python_media, 
+    eng_soft_bim1, eng_soft_bim2, eng_soft_media, 
+    ia_bim1, ia_bim2, ia_media 
+    FROM alunos_nova WHERE matricula=?'''
+    db.execute(query, (matricula,))
 
     dados = db.fetchone()
     if dados:

@@ -13,8 +13,9 @@ db = conn.cursor()
 class BasePortal(ctk.CTk):
     def __init__(self, nome_usuario, email_usuario, titulo, subtitulo):
         super().__init__()
-        self.conn = sqlite3.connect("database.db")
-        self.db = self.conn.cursor()
+        # usa a conexão global declarada no topo do módulo
+        self.conn = conn
+        self.db = db
         self.title(titulo)
         self.geometry("900x550")
         self.configure(fg_color="#001A80")
@@ -117,11 +118,12 @@ class PortalAluno(BasePortal):
                 return
 
             dados = controllers.consultar_notas(db, matricula)
-            if dados is None:
+            if not dados or len(dados) == 0:
                 messagebox.showerror("Erro", "Aluno não encontrado.")
                 return
 
-        # calcula as médias ignorando None
+            dados = dados[0]  # Pega o primeiro dict da lista
+
             def calc_media(b1, b2):
                 notas = [n for n in (b1, b2) if n is not None]
                 return round(sum(notas)/len(notas), 2) if notas else None
@@ -174,10 +176,8 @@ class PortalAluno(BasePortal):
                 messagebox.showerror("Erro", "Digite uma matrícula válida.")
                 return
 
-            conn = sqlite3.connect("database.db")
-            db = conn.cursor()
-            faltas = controllers.consultar_faltas(db, matricula)
-            conn.close()
+            # usa conexão global
+            faltas = controllers.consultar_falta(db, matricula)
 
             if faltas is None:
                 messagebox.showerror("Erro", "Matrícula não encontrada.")
@@ -410,10 +410,8 @@ class PortalDocente(BasePortal):
             widget.destroy()
         self._cabecalho_lista()
 
-        conn = sqlite3.connect("database.db")
-        db = conn.cursor()
+        # usa conexão global
         atividades = controllers.listar_atividades(db)
-        conn.close()
 
         for i, a in enumerate(atividades, start=1):
             ctk.CTkLabel(self.frame_lista, text=a['titulo'], anchor="w").grid(row=i, column=0, sticky="w", padx=10)
@@ -444,11 +442,9 @@ class PortalDocente(BasePortal):
             data = campos["Data de Entrega (AAAA-MM-DD)"].get()
             link = campos["Link (opcional)"].get() or None
 
-            conn = sqlite3.connect("database.db")
-            db = conn.cursor()
+            # usa conexão global
             sucesso = controllers.criar_atividade(db, titulo, descricao, data, link)
             conn.commit()
-            conn.close()
 
             if sucesso:
                 messagebox.showinfo("Sucesso", f"Atividade '{titulo}' criada com sucesso!")
@@ -477,11 +473,9 @@ class PortalDocente(BasePortal):
         def excluir():
             titulo = entry.get()
 
-            conn = sqlite3.connect("database.db")
-            db = conn.cursor()
+            # usa conexão global
             sucesso = controllers.excluir_atividade(db, titulo)
             conn.commit()
-            conn.close()
 
             if sucesso:
                 messagebox.showinfo("Sucesso", f"Atividade '{titulo}' excluída com sucesso!")
@@ -559,11 +553,9 @@ class PortalDocente(BasePortal):
             coluna = mapa_colunas[materia]
 
             # salva no banco
-            conn = sqlite3.connect("database.db")
-            db = conn.cursor()
-
             try:
                 db.execute(f"UPDATE alunos_nova SET {coluna} = ? WHERE matricula = ?", (nota, matricula))
+                # commit usando conexão global
                 conn.commit()
                 messagebox.showinfo("Sucesso", f"Nota registrada em {materia}!")
                 popup.destroy()
@@ -607,10 +599,8 @@ class PortalDocente(BasePortal):
 
         def mostrar_notas():
             matricula = matricula_entry.get()
-            conn = sqlite3.connect("database.db")
-            db = conn.cursor()
+            # usa conexão global
             notas = controllers.consultar_notas(db, matricula)
-            conn.close()
 
             if not notas:
                 messagebox.showerror("Erro", "Aluno não encontrado ou erro ao consultar notas!")
@@ -696,17 +686,14 @@ class PortalDocente(BasePortal):
                 messagebox.showerror("Erro", "Informe um número válido de faltas!")
                 return
 
-            conn = sqlite3.connect("database.db")
-            db = conn.cursor()
             try:
-                # incrementa as faltas no banco
+                # incrementa as faltas no banco usando conexão global
                 db.execute("UPDATE alunos_nova SET faltas = faltas + ? WHERE matricula = ?", (faltas, matricula))
                 conn.commit()
                 messagebox.showinfo("Sucesso", f"{faltas} faltas registradas para o aluno!")
                 popup.destroy()
             except:
                 messagebox.showerror("Erro", "Falha ao registrar a falta.")
-            conn.close()
 
         # botão salvar
         ctk.CTkButton(popup, text="Salvar Falta", fg_color="#E57373", hover_color="#EF5350",
@@ -752,12 +739,15 @@ class LoginApp(ctk.CTk):
 
         self.tipo_label = ctk.CTkLabel(frame, text="Aluno selecionado", text_color="green")
         self.tipo_label.pack(pady=(0, 10))
-        self.selecionar_tipo("Aluno")
 
         # campos de login (email e senha)
-        ctk.CTkLabel(frame, text="Digite seu e-mail:", anchor="w", text_color="black").pack(anchor="w", padx=40)
-        self.email_entry = ctk.CTkEntry(frame, placeholder_text="E-mail", width=300, height=30)
+        self.identifier_label = ctk.CTkLabel(frame, text="Digite sua matrícula:", anchor="w", text_color="black")
+        self.identifier_label.pack(anchor="w", padx=40)
+        self.email_entry = ctk.CTkEntry(frame, placeholder_text="Matrícula / CPF", width=300, height=30)
         self.email_entry.pack(pady=(5, 15), padx=40)
+
+        # aplica seleção inicial após widgets estarem criados
+        self.selecionar_tipo(self.tipo_usuario)
 
         ctk.CTkLabel(frame, text="Digite sua senha:", anchor="w", text_color="black").pack(anchor="w", padx=40)
         self.senha_entry = ctk.CTkEntry(frame, placeholder_text="Senha", show="*", width=300, height=30)
@@ -779,6 +769,14 @@ class LoginApp(ctk.CTk):
     # muda o tipo de usuário selecionado
     def selecionar_tipo(self, tipo):
         self.tipo_usuario = tipo
+        # atualiza label informativa e placeholder do campo de identificação
+        if tipo == "Aluno":
+            self.identifier_label.configure(text="Digite sua matrícula:")
+            self.email_entry.configure(placeholder_text="Matrícula")
+        else:
+            self.identifier_label.configure(text="Digite seu CPF:")
+            self.email_entry.configure(placeholder_text="CPF")
+
         self.tipo_label.configure(text=f"{tipo} selecionado")
         for t, btn in self.btns.items():
             cor = "#2fa84f" if t == tipo else "#34C759"
@@ -797,18 +795,67 @@ class LoginApp(ctk.CTk):
 
     # faz o login e abre o portal correspondente
     def login(self):
-        nome = self.tipo_usuario
-        email = self.email_entry.get().strip() or "email@exemplo.com"
-        self.destroy()
+        identificador = self.email_entry.get().strip()
+        senha = self.senha_entry.get().strip()
 
-        if self.tipo_usuario == "Aluno":
-            portal = PortalAluno(nome_usuario=nome, email_usuario=email)
-        elif self.tipo_usuario == "Docente":
-            portal = PortalDocente(nome_usuario=nome, email_usuario=email)
+        if not identificador or not senha:
+            messagebox.showerror("Erro", "Preencha identificação e senha.")
+            return
 
-        portal.mainloop()
+        # usa conexão global `conn` e cursor `db` declarados no topo
+        try:
+            if self.tipo_usuario == "Aluno":
+                ok = controllers.login_aluno(db, identificador, senha)
+                if not ok:
+                    messagebox.showerror("Erro", "Matrícula ou senha inválida.")
+                    return
+
+                # obtém dados do aluno (nome e e-mail)
+                aluno = controllers.consultar_aluno(db, identificador)
+                if aluno:
+                    nome_usuario = f"{aluno.get('nome')} {aluno.get('sobrenome')}"
+                else:
+                    nome_usuario = identificador
+
+                # tenta buscar e-mail no banco
+                db.execute("SELECT email FROM alunos_nova WHERE matricula = ?", (identificador,))
+                row = db.fetchone()
+                email_usuario = row[0] if row and row[0] else f"{identificador}@aluno"
+
+                self.destroy()
+                portal = PortalAluno(nome_usuario=nome_usuario, email_usuario=email_usuario)
+
+            else:  # Docente
+                ok = controllers.login_professor(db, identificador, senha)
+                if not ok:
+                    messagebox.showerror("Erro", "CPF ou senha inválida.")
+                    return
+
+                # obter nome e e-mail do professor
+                db.execute("SELECT nome, sobrenome, email FROM professores WHERE cpf = ?", (identificador,))
+                row = db.fetchone()
+                if row:
+                    nome_usuario = f"{row[0]} {row[1]}"
+                    email_usuario = row[2] or f"{identificador}@professor"
+                else:
+                    nome_usuario = identificador
+                    email_usuario = f"{identificador}@professor"
+
+                self.destroy()
+                portal = PortalDocente(nome_usuario=nome_usuario, email_usuario=email_usuario)
+
+            portal.mainloop()
+
+        finally:
+            # não fecha a conexão aqui — será fechada ao sair da aplicação
+            pass
 
 # main (ponto de partida do sistema)
 if __name__ == "__main__":
     app = LoginApp()
     app.mainloop()
+    # fecha a conexão global ao encerrar a aplicação
+    try:
+        conn.close()
+    except Exception:
+        pass
