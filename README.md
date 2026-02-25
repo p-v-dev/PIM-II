@@ -7,9 +7,7 @@
 
 ## 📋 Sobre o Projeto
 
-Este é o projeto desenvolvido para a disciplina PIM II, um **Sistema de Gestão Educacional** desenvolvido em **C** com interface em **Python**. O sistema foi criado para gerenciar uma instituição de ensino, controlando alunos, professores, disciplinas e matrículas.
-
-Como todo bom projeto de faculdade, foi uma aventura entre C, Python e muito café! ☕
+Este é o projeto de grade curricular, PIM II, um **Sistema de Gestão Educacional** desenvolvido contendo uma CLI **C** e uma app Desktop em **Python**. O sistema foi criado para gerenciar uma instituição de ensino, controlando alunos, professores, disciplinas e matrículas.
 
 ## 🚀 Funcionalidades Principais
 
@@ -27,9 +25,9 @@ Como todo bom projeto de faculdade, foi uma aventura entre C, Python e muito caf
 
 | Tecnologia | Finalidade | Arquivos |
 |------------|-------------|----------|
-| `C` | Backend principal e lógica de negócio | `main.c`, `adm.c` |
-| `Python` | Interface gráfica do usuário | `interface.py` |
-| `SQLite` | Banco de dados embutido | (implícito no código) |
+| `C` | Linguagem principal e parte crítica lógica de negócio | `main.c`, `adm.c` |
+| `Python` | App con Interface gráfica | `interface.py` |
+| `SQLite` | Banco de dados embutido |
 
 ## 🏗️ Estrutura do Projeto
 PIM-II/
@@ -58,15 +56,15 @@ PIM-II/
 
 🎯 Funcionalidades Detalhadas
 
-Backend (C)
+CLI (C)
 
     main.c: Menu CLI principal e fluxo do sistema
 
     adm.c: Operações de CRUD (Create, Read, Update, Delete)
 
-    Gestão de: Alunos e Professores.
+    Gestão de Alunos e Professores.
 
-Frontend (Python)
+APP Desktop (Python)
 
     interface.py: Interface gráfica com Tkinter
 
@@ -82,7 +80,6 @@ O sistema utiliza SQLite com tabelas para:
     Alunos: matrícula, nome, matricula, etc.
 
     Professores: nome, disciplina, etc.
-
 
 🤝 Como Contribuir
 
